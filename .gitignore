@@ -1,0 +1,10 @@
+# Python virtual environment
+virt/
+venv/
+# Byte-compiled / cache files
+__pycache__/
+*.py
+# Local database / secrets
+.sqlite3
+# VS Code / IDE settings
+.vscode/
