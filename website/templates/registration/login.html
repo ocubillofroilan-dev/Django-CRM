@@ -1,0 +1,28 @@
+{% extends "auth_base.html" %}
+{% block title %}Sign in{% endblock %}
+
+{% block content %}
+<h1>Welcome back</h1>
+<p class="text-body-secondary mb-4">Sign in to manage your customers.</p>
+
+{% if locked %}
+<div class="alert alert-warning d-flex gap-2" role="alert">
+  <svg class="icon mt-1" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>
+  <div>Too many failed attempts. For your security, sign-in is paused for a few minutes.</div>
+</div>
+{% endif %}
+
+<form method="post" action="{% url 'login' %}">
+  {% csrf_token %}
+  {% include "website/_form_errors.html" %}
+  <input type="hidden" name="next" value="{{ next }}">
+  {% include "website/_field.html" with field=form.username %}
+  {% include "website/_field.html" with field=form.password %}
+  <div class="text-end mb-3"><a class="small" href="{% url 'password_reset' %}">Forgot password?</a></div>
+  <button type="submit" class="btn btn-primary w-100 py-2">Sign in</button>
+</form>
+
+{% if ALLOW_REGISTRATION %}
+<p class="text-center text-body-secondary mt-4 mb-0">New here? <a href="{% url 'register' %}">Create an account</a></p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Customers{% endblock %}
+{% block page_title %}Customers{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Customers</h1>
+    <p>{% if can_manage_all %}Everyone on the team's customers, in one place.{% else %}The customers you look after.{% endif %}</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'export_records' %}{% if querystring %}?{{ querystring }}{% endif %}" data-export-link>
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-download"/></svg> Export CSV
+    </a>
+    <a class="btn btn-primary" href="{% url 'add_record' %}">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg> New customer
+    </a>
+  </div>
+</div>
+
+<section class="row g-3 mb-4" aria-label="Summary">
+  <div class="col-6 col-xl-3">
+    <div class="surface stat">
+      <span class="stat-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-users"/></svg></span>
+      <div><div class="stat-value">{{ stats.total }}</div><div class="stat-label">Total customers</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="surface stat">
+      <span class="stat-icon is-lead"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-target"/></svg></span>
+      <div><div class="stat-value">{{ stats.leads }}</div><div class="stat-label">Leads</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="surface stat">
+      <span class="stat-icon is-active"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-activity"/></svg></span>
+      <div><div class="stat-value">{{ stats.active }}</div><div class="stat-label">Active</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="surface stat">
+      <span class="stat-icon is-new"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-trending-up"/></svg></span>
+      <div><div class="stat-value">{{ stats.new_30 }}</div><div class="stat-label">New in 30 days</div></div>
+    </div>
+  </div>
+</section>
+
+<form class="surface toolbar mb-3" method="get" action="{% url 'home' %}" role="search" data-live-search>
+  <div class="search-box">
+    <label for="q" class="visually-hidden">Search customers</label>
+    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
+    <input type="search" id="q" name="q" value="{{ q }}" class="form-control" placeholder="Search name, email, phone or city" autocomplete="off" data-search-input />
+    <kbd aria-hidden="true">/</kbd>
+  </div>
+  <div>
+    <label for="status" class="visually-hidden">Status</label>
+    <select id="status" name="status" class="form-select">
+      <option value="">All statuses</option>
+      {% for value, label in status_choices %}
+        <option value="{{ value }}" {% if value == status %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="sort" class="visually-hidden">Sort by</label>
+    <select id="sort" name="sort" class="form-select">
+      {% for value, label in sort_options %}
+        <option value="{{ value }}" {% if value == sort %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="visually-hidden" type="submit" data-no-loading>Search</button>
+  <noscript><button class="btn btn-soft" type="submit">Apply</button></noscript>
+</form>
+
+<div class="visually-hidden" role="status" id="resultsStatus"></div>
+<section class="surface overflow-hidden" aria-label="Customer list">
+  <div id="results">
+    {% include "website/_record_results.html" %}
+  </div>
+</section>
+
+{% include "website/_delete_modal.html" %}
+{% endblock %}

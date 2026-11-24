@@ -1,0 +1,97 @@
+{% load ui_tags %}
+<div data-result-summary="{{ paginator.count }} customer{{ paginator.count|pluralize }} found">
+{% if records %}
+  <div class="table-responsive">
+    <table class="table table-crm align-middle">
+      <caption class="visually-hidden">Customers</caption>
+      <thead>
+        <tr>
+          <th scope="col">Customer</th>
+          <th scope="col" class="d-none d-md-table-cell">Phone</th>
+          <th scope="col" class="d-none d-lg-table-cell">Location</th>
+          <th scope="col">Status</th>
+          {% if can_manage_all %}<th scope="col" class="d-none d-xl-table-cell">Owner</th>{% endif %}
+          <th scope="col" class="d-none d-md-table-cell">Added</th>
+          <th scope="col" class="text-end"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in records %}
+        <tr data-href="{% url 'record' r.pk %}">
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              <span class="avatar avatar-h{{ r.full_name|avatar_hue }}" aria-hidden="true">{{ r.initials }}</span>
+              <div class="min-w-0">
+                <a class="name-link" href="{% url 'record' r.pk %}">{{ r.full_name }}</a>
+                <div class="small text-body-secondary text-truncate">{{ r.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="d-none d-md-table-cell">{{ r.phone }}</td>
+          <td class="d-none d-lg-table-cell">{{ r.city }}{% if r.province %}, {{ r.province }}{% endif %}</td>
+          <td><span class="status status-{{ r.status }}">{{ r.get_status_display }}</span></td>
+          {% if can_manage_all %}
+          <td class="d-none d-xl-table-cell">{% if r.owner %}{% firstof r.owner.get_full_name r.owner.get_username %}{% else %}<span class="text-body-secondary">Unassigned</span>{% endif %}</td>
+          {% endif %}
+          <td class="d-none d-md-table-cell text-body-secondary small">{{ r.created_at|date:"M j, Y" }}</td>
+          <td class="text-end">
+            <div class="row-actions">
+              <a class="btn btn-soft btn-icon btn-sm" href="{% url 'update_record' r.pk %}" aria-label="Edit {{ r.full_name }}" title="Edit">
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg>
+              </a>
+              <a class="btn btn-icon btn-sm btn-outline-danger" href="{% url 'delete_record' r.pk %}" data-confirm-delete data-delete-name="{{ r.full_name }}" aria-label="Delete {{ r.full_name }}" title="Delete">
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-trash"/></svg>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="results-meta">
+    <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ paginator.count }}</span>
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Pagination">
+      <ul class="pagination pagination-sm">
+        {% if page_obj.has_previous %}
+          <li class="page-item"><a class="page-link" data-page href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Previous page">&lsaquo;</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link" aria-hidden="true">&lsaquo;</span></li>
+        {% endif %}
+        {% for p in page_range %}
+          {% if p == ellipsis %}
+            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+          {% elif p == page_obj.number %}
+            <li class="page-item active" aria-current="page"><span class="page-link">{{ p }}</span></li>
+          {% else %}
+            <li class="page-item"><a class="page-link" data-page href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ p }}">{{ p }}</a></li>
+          {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+          <li class="page-item"><a class="page-link" data-page href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" aria-label="Next page">&rsaquo;</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link" aria-hidden="true">&rsaquo;</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+  </div>
+
+{% elif has_filters %}
+  <div class="empty">
+    <div class="empty-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-search"/></svg></div>
+    <h2 class="h5">No customers match your search</h2>
+    <p class="text-body-secondary mb-3">Try a different word, or remove a filter.</p>
+    <a class="btn btn-soft" href="{% url 'home' %}" data-clear-filters>Clear filters</a>
+  </div>
+{% else %}
+  <div class="empty">
+    <div class="empty-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-user-plus"/></svg></div>
+    <h2 class="h5">No customers yet</h2>
+    <p class="text-body-secondary mb-3">Add your first customer and they will show up here.</p>
+    <a class="btn btn-primary" href="{% url 'add_record' %}"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg> Add a customer</a>
+  </div>
+{% endif %}
+</div>

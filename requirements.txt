@@ -1,0 +1,6 @@
+Django>=5.2
+djangorestframework>=3.16
+python-dotenv>=1.0
+
+# Only needed when DB_ENGINE=mysql (SQLite works out of the box)
+mysqlclient>=2.2

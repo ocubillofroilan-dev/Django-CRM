@@ -1,47 +1,151 @@
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
 from django import forms
-from .models import Record
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordChangeForm,
+    PasswordResetForm,
+    SetPasswordForm,
+    UserCreationForm,
+)
 
-class SignUpForm(UserCreationForm):
-    email = forms.EmailField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Email Address'}))
-    first_name = forms.CharField(label="", max_length=100, widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'First Name'}))
-    last_name = forms.CharField(label="", max_length=100, widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Last Name'}))
+from .models import MANAGE_ALL_PERMISSION, Note, Record
+
+User = get_user_model()
 
 
-    class Meta:
-        model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
-
+class BootstrapFormMixin:
+    """Gives every widget the right Bootstrap class. Validation state is added at render time."""
 
     def __init__(self, *args, **kwargs):
-        super(SignUpForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            widget = field.widget
+            if isinstance(widget, forms.CheckboxInput):
+                css = "form-check-input"
+            elif isinstance(widget, forms.Select):
+                css = "form-select"
+            else:
+                css = "form-control"
+            existing = widget.attrs.get("class", "")
+            if css not in existing:
+                widget.attrs["class"] = f"{existing} {css}".strip()
 
-        self.fields['username'].widget.attrs['class'] = 'form-control'
-        self.fields['username'].widget.attrs['placeholder'] = 'User Name'
-        self.fields['username'].label = ''
-        self.fields['username'].help_text = '<span class="form-text text-muted"><small>Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</small></span>'
 
-        self.fields['password1'].widget.attrs['class'] = 'form-control'
-        self.fields['password1'].widget.attrs['placeholder'] = 'Password'
-        self.fields['password1'].label = ''
-        self.fields['password1'].help_text = '<ul class="form-text text-muted small"><li>Your password can\'t be too similar to your other personal information.</li><li>Your password must contain at least 8 characters.</li><li>Your password can\'t be a commonly used password.</li><li>Your password can\'t be entirely numeric.</li></ul>'
+# --------------------------------------------------------------------------
+# Authentication forms
+# --------------------------------------------------------------------------
+class LoginForm(BootstrapFormMixin, AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].widget.attrs.update(
+            {"autocomplete": "username", "autocapitalize": "none", "spellcheck": "false"}
+        )
+        self.fields["password"].widget.attrs.update({"autocomplete": "current-password"})
 
-        self.fields['password2'].widget.attrs['class'] = 'form-control'
-        self.fields['password2'].widget.attrs['placeholder'] = 'Confirm Password'
-        self.fields['password2'].label = ''
-        self.fields['password2'].help_text = '<span class="form-text text-muted"><small>Enter the same password as before, for verification.</small></span>'	
 
-class AddRecordForm(forms.ModelForm):
-	first_name = forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"First Name", "class":"form-control"}), label="")
-	last_name = forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"Last Name", "class":"form-control"}), label="")
-	email = forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"Email", "class":"form-control"}), label="")
-	phone = forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"Phone", "class":"form-control"}), label="")
-	address = forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"Address", "class":"form-control"}), label="")
-	city = forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"City", "class":"form-control"}), label="")
-	province = forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"Province", "class":"form-control"}), label="")
-	zipcode = forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"Zipcode", "class":"form-control"}), label="")
+class SignUpForm(BootstrapFormMixin, UserCreationForm):
+    first_name = forms.CharField(max_length=150, label="First name")
+    last_name = forms.CharField(max_length=150, label="Last name")
+    email = forms.EmailField(max_length=254, label="Work email")
 
-	class Meta:
-		model = Record
-		exclude = ("user",)
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ("first_name", "last_name", "email", "username", "password1", "password2")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        hints = {
+            "first_name": "given-name",
+            "last_name": "family-name",
+            "email": "email",
+            "username": "username",
+            "password1": "new-password",
+            "password2": "new-password",
+        }
+        for name, autocomplete in hints.items():
+            self.fields[name].widget.attrs["autocomplete"] = autocomplete
+        self.fields["password1"].label = "Password"
+        self.fields["password2"].label = "Confirm password"
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("An account with this email already exists.")
+        return email
+
+
+class StyledPasswordChangeForm(BootstrapFormMixin, PasswordChangeForm):
+    pass
+
+
+class StyledPasswordResetForm(BootstrapFormMixin, PasswordResetForm):
+    pass
+
+
+class StyledSetPasswordForm(BootstrapFormMixin, SetPasswordForm):
+    pass
+
+
+# --------------------------------------------------------------------------
+# Customer forms
+# --------------------------------------------------------------------------
+class RecordForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = Record
+        fields = [
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+            "status",
+            "owner",
+            "address",
+            "city",
+            "province",
+            "zipcode",
+            "notes",
+        ]
+        widgets = {
+            "first_name": forms.TextInput(attrs={"autocomplete": "off"}),
+            "last_name": forms.TextInput(attrs={"autocomplete": "off"}),
+            "email": forms.EmailInput(attrs={"autocomplete": "off", "inputmode": "email"}),
+            "phone": forms.TextInput(
+                attrs={"type": "tel", "autocomplete": "off", "inputmode": "tel", "placeholder": "+63 912 345 6789"}
+            ),
+            "zipcode": forms.TextInput(attrs={"autocomplete": "off"}),
+            "notes": forms.Textarea(attrs={"rows": 4}),
+        }
+
+    def __init__(self, *args, user, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+        if user.has_perm(MANAGE_ALL_PERMISSION):
+            owner = self.fields["owner"]
+            owner.required = False
+            owner.empty_label = "Unassigned"
+            owner.queryset = User.objects.filter(is_active=True).order_by("username")
+            owner.label_from_instance = lambda u: u.get_full_name() or u.get_username()
+        else:
+            # Agents can never choose or change the owner. The field is removed, so
+            # a tampered POST cannot set it either.
+            del self.fields["owner"]
+
+    def clean_email(self):
+        return self.cleaned_data["email"].strip().lower()
+
+
+class NoteForm(forms.ModelForm):
+    class Meta:
+        model = Note
+        fields = ["body"]
+        widgets = {
+            "body": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "class": "form-control",
+                    "placeholder": "Log a call, a follow-up or anything worth remembering…",
+                    "maxlength": 2000,
+                }
+            )
+        }
+        labels = {"body": "Add a note"}

@@ -1,0 +1,27 @@
+{% extends base_template %}
+{% block title %}{{ heading }}{% endblock %}
+{% block page_title %}{{ heading }}{% endblock %}
+
+{% block content %}
+<div class="narrow {% if base_template == 'base.html' %}surface surface-pad{% endif %}">
+  <h1 class="h3 fw-bold mb-1">{{ heading }}</h1>
+  <p class="text-body-secondary mb-4">{{ subheading }}</p>
+
+  {% if validlink is False %}
+    <div class="alert alert-danger" role="alert">This reset link is invalid or has already been used.</div>
+    <a class="btn btn-primary" href="{% url 'password_reset' %}">Request a new link</a>
+  {% else %}
+    <form method="post">
+      {% csrf_token %}
+      {% include "website/_form_errors.html" %}
+      {% for field in form %}
+        {% include "website/_field.html" with field=field %}
+      {% endfor %}
+      <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
+        <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
+        {% if back_url %}<a class="btn btn-link" href="{{ back_url }}">{{ back_label }}</a>{% endif %}
+      </div>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

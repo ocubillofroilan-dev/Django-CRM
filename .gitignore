@@ -1,10 +1,19 @@
-# Python virtual environment
-virt/
-venv/
-# Byte-compiled / cache files
+# Python
 __pycache__/
-*.py
-# Local database / secrets
-.sqlite3
-# VS Code / IDE settings
+*.py[cod]
+venv/
+virt/
+.venv/
+
+# Secrets & local data - never commit these
+.env
+*.sqlite3
+db.sqlite3
+
+# Build output
+staticfiles/
+
+# Editors / OS
 .vscode/
+.idea/
+.DS_Store

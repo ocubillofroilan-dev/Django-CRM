@@ -1,0 +1,12 @@
+{% extends base_template %}
+{% block title %}{{ heading }}{% endblock %}
+{% block page_title %}{{ heading }}{% endblock %}
+
+{% block content %}
+<div class="narrow text-center {% if base_template == 'base.html' %}surface surface-pad{% endif %}">
+  <div class="empty-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></div>
+  <h1 class="h3 fw-bold">{{ heading }}</h1>
+  <p class="text-body-secondary">{{ message }}</p>
+  <a class="btn btn-primary mt-2" href="{{ action_url }}">{{ action_label }}</a>
+</div>
+{% endblock %}

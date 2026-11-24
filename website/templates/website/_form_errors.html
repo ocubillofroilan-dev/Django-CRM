@@ -1,0 +1,6 @@
+{% if form.non_field_errors %}
+<div class="alert alert-danger d-flex gap-2" role="alert">
+  <svg class="icon mt-1" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>
+  <div>{% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>
+</div>
+{% endif %}

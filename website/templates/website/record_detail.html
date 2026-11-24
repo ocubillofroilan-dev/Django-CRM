@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load ui_tags %}
+{% block title %}{{ record.full_name }}{% endblock %}
+{% block page_title %}Customer{% endblock %}
+
+{% block content %}
+<a class="btn btn-link px-0 mb-2 text-decoration-none" href="{% url 'home' %}">
+  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg> All customers
+</a>
+
+<div class="page-head">
+  <div class="d-flex align-items-center gap-3 min-w-0">
+    <span class="avatar avatar-lg avatar-h{{ record.full_name|avatar_hue }}" aria-hidden="true">{{ record.initials }}</span>
+    <div class="min-w-0">
+      <h1 class="text-break">{{ record.full_name }}</h1>
+      <p>
+        <span class="status status-{{ record.status }}">{{ record.get_status_display }}</span>
+        <span class="ms-2">Added {{ record.created_at|date:"M j, Y" }}</span>
+      </p>
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-primary" href="{% url 'update_record' record.pk %}">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg> Edit
+    </a>
+    <a class="btn btn-outline-danger" href="{% url 'delete_record' record.pk %}" data-confirm-delete data-delete-name="{{ record.full_name }}">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-trash"/></svg> Delete
+    </a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <section class="surface surface-pad" aria-labelledby="contact-heading">
+      <h2 class="section-title" id="contact-heading">Contact</h2>
+      <dl class="detail-list">
+        <div class="detail-item">
+          <span class="detail-icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg></span>
+          <div><dt>Email</dt><dd><a href="mailto:{{ record.email }}">{{ record.email }}</a></dd></div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg></span>
+          <div><dt>Phone</dt><dd><a href="tel:{{ record.phone }}">{{ record.phone }}</a></dd></div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg></span>
+          <div><dt>Address</dt><dd>{{ record.address }}<br>{{ record.city }}, {{ record.province }} {{ record.zipcode }}</dd></div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user"/></svg></span>
+          <div>
+            <dt>Owner</dt>
+            <dd>{% if record.owner %}{% firstof record.owner.get_full_name record.owner.get_username %}{% else %}<span class="text-body-secondary">Unassigned</span>{% endif %}</dd>
+          </div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg></span>
+          <div><dt>Last updated</dt><dd>{{ record.updated_at|date:"M j, Y, g:i A" }}</dd></div>
+        </div>
+      </dl>
+    </section>
+
+    {% if record.notes %}
+    <section class="surface surface-pad mt-4" aria-labelledby="remarks-heading">
+      <h2 class="section-title" id="remarks-heading">Remarks</h2>
+      <p class="mb-0 prewrap">{{ record.notes }}</p>
+    </section>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-7">
+    <section class="surface surface-pad" id="timeline" aria-labelledby="timeline-heading">
+      <h2 class="section-title" id="timeline-heading">Timeline</h2>
+      <form method="post" action="{% url 'add_note' record.pk %}">
+        {% csrf_token %}
+        <label for="{{ note_form.body.id_for_label }}" class="visually-hidden">{{ note_form.body.label }}</label>
+        {{ note_form.body }}
+        <div class="d-flex justify-content-end mt-2">
+          <button type="submit" class="btn btn-primary btn-sm">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-message"/></svg> Add note
+          </button>
+        </div>
+      </form>
+
+      {% if record.timeline.all %}
+      <ul class="timeline">
+        {% for note in record.timeline.all %}
+        <li class="timeline-item">
+          <span class="avatar avatar-sm avatar-h{{ note.author.get_username|avatar_hue }}" aria-hidden="true">{{ note.author.get_username|slice:":1"|upper|default:"?" }}</span>
+          <div class="timeline-body">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+              <div>
+                <strong>{% if note.author %}{% firstof note.author.get_full_name note.author.get_username %}{% else %}Former user{% endif %}</strong>
+                <span class="text-body-secondary small ms-1" title="{{ note.created_at|date:'M j, Y, g:i A' }}">{{ note.created_at|timesince }} ago</span>
+              </div>
+              {% if note.author_id == user.pk or can_manage_all %}
+              <form method="post" action="{% url 'delete_note' note.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-link btn-sm text-danger text-decoration-none p-0" data-no-loading>Delete</button>
+              </form>
+              {% endif %}
+            </div>
+            <p>{{ note.body }}</p>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-body-secondary text-center mt-4 mb-0">No notes yet. Log a call or a follow-up above.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+
+{% include "website/_delete_modal.html" %}
+{% endblock %}

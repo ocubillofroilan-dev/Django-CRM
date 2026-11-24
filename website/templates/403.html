@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block title %}Not allowed{% endblock %}
+{% block body %}
+<main id="main" class="center-screen">
+  <div class="surface surface-pad text-center card-narrow">
+    <div class="empty-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg></div>
+    <h1 class="h3 fw-bold">You can't do that</h1>
+    <p class="text-body-secondary">Your account doesn't have permission for this action.</p>
+    <a class="btn btn-primary" href="{% url 'home' %}">Back to customers</a>
+  </div>
+</main>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% autoescape off %}Hello,
+
+Someone asked to reset the password for the CRM account linked to {{ email }}.
+
+Choose a new password here:
+{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}
+
+The link works once and expires in 3 days. If this wasn't you, ignore this email and your password stays the same.
+
+Your username: {{ user.get_username }}
+{% endautoescape %}

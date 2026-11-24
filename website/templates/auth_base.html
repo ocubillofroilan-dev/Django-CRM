@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block body %}
+<main id="main" class="auth-wrap" tabindex="-1">
+  <section class="auth-hero">
+    <a class="brand" href="{% url 'login' %}">
+      <span class="brand-mark"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg></span>
+      <span>CRM</span>
+    </a>
+    <div>
+      <h2>Know your customers. Keep every conversation.</h2>
+      <ul>
+        <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg> Private by default: you only see the customers you own</li>
+        <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg> Instant search, filters and one-click CSV export</li>
+        <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg> A notes timeline on every customer</li>
+        <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg> A secure REST API for your own tools</li>
+      </ul>
+    </div>
+    <p class="small mb-0 opacity-75">Built with Django · Bootstrap 5</p>
+  </section>
+
+  <section class="auth-panel">
+    <button type="button" class="btn btn-soft btn-icon auth-theme" data-theme-toggle aria-pressed="false" aria-label="Switch theme">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-moon"/></svg>
+    </button>
+    <div class="auth-card">
+      {% block content %}{% endblock %}
+    </div>
+  </section>
+</main>
+{% endblock %}
