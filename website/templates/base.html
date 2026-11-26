@@ -39,9 +39,11 @@
     <a class="side-link {% if url_name|slice:':5' == 'team_' %}is-active{% endif %}" href="{% url 'team_list' %}">
       <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user-plus"/></svg> Team
     </a>
+    {% if not DEMO_MODE %}
     <a class="side-link" href="{% url 'admin:index' %}">
       <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg> Admin site
     </a>
+    {% endif %}
     {% endif %}
     <a class="side-link {% if url_name == 'password_change' or url_name == 'password_change_done' %}is-active{% endif %}" href="{% url 'password_change' %}">
       <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg> Change password
@@ -88,6 +90,12 @@
   </header>
 
   <main id="main" class="content" tabindex="-1">
+    {% if DEMO_MODE %}
+    <div class="demo-banner" role="note">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>
+      <span><strong>Demo site.</strong> Everything here is fictional. Your changes disappear when the site goes to sleep.</span>
+    </div>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
 </div>

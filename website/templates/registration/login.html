@@ -22,5 +22,14 @@
   <button type="submit" class="btn btn-primary w-100 py-2">Sign in</button>
 </form>
 
+{% if DEMO_MODE %}
+<div class="demo-box mt-4">
+  <div class="fw-semibold mb-1">Try the demo</div>
+  <p class="small mb-2">Sign in with either account. Everything is fictional and resets when the site sleeps.</p>
+  <div class="small"><code>demo_admin</code> (Admin, can assign and delete) &middot; <code>ana</code> (Staff)</div>
+  <div class="small">Password: <code>{{ DEMO_PASSWORD }}</code></div>
+</div>
+{% else %}
 <p class="text-center text-body-secondary small mt-4 mb-0">Accounts are created by your administrator.</p>
+{% endif %}
 {% endblock %}

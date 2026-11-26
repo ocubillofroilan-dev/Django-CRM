@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -84,7 +85,7 @@ class Command(BaseCommand):
     help = "Fill the app with fictional demo data (safe to run more than once)."
 
     def add_arguments(self, parser):
-        parser.add_argument("--password", default="demo-pass-123", help="Password for the demo accounts.")
+        parser.add_argument("--password", default=settings.DEMO_PASSWORD, help="Password for the demo accounts.")
 
     def handle(self, *args, **options):
         User = get_user_model()

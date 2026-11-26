@@ -120,6 +120,40 @@
     });
   }
 
+  /* ---------- "Who is working on this?" window ------------------------ */
+  var assignModalElement = doc.getElementById("assignModal");
+  if (assignModalElement && hasBootstrap) {
+    var assignModal = window.bootstrap.Modal.getOrCreateInstance(assignModalElement);
+    var assignFilter = assignModalElement.querySelector("[data-assign-filter]");
+
+    var filterNames = function () {
+      var term = assignFilter ? assignFilter.value.trim().toLowerCase() : "";
+      assignModalElement.querySelectorAll("[data-assign-option]").forEach(function (option) {
+        var name = (option.getAttribute("data-name") || "").toLowerCase();
+        option.classList.toggle("d-none", term !== "" && name.indexOf(term) === -1);
+      });
+    };
+    if (assignFilter) assignFilter.addEventListener("input", filterNames);
+
+    doc.addEventListener("click", function (event) {
+      var trigger = event.target.closest("[data-assign-ticket]");
+      if (!trigger) return;
+      event.preventDefault();
+      assignModalElement.querySelector("form").setAttribute("action", trigger.getAttribute("data-assign-url"));
+      assignModalElement.querySelector("[data-assign-number]").textContent = trigger.getAttribute("data-ticket-number") || "this ticket";
+      var current = trigger.getAttribute("data-current");
+      assignModalElement.querySelector("[data-assign-current]").textContent = current ? "Right now: " + current + "." : "Right now: nobody.";
+      var release = assignModalElement.querySelector("[data-assign-release]");
+      if (release) release.classList.toggle("d-none", trigger.getAttribute("data-can-release") !== "1");
+      if (assignFilter) assignFilter.value = "";
+      filterNames();
+      assignModal.show();
+    });
+    assignModalElement.addEventListener("shown.bs.modal", function () {
+      if (assignFilter) assignFilter.focus();
+    });
+  }
+
   /* ---------- Clickable table rows ----------------------------------- */
   doc.addEventListener("click", function (event) {
     var row = event.target.closest("tr[data-href]");

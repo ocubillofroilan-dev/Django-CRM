@@ -1,0 +1,4 @@
+# Only needed if you run ClientDesk on MySQL (DB_ENGINE=mysql).
+# Install with:  pip install -r requirements-mysql.txt
+-r requirements.txt
+mysqlclient>=2.2

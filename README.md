@@ -2,25 +2,50 @@
 
 ClientDesk is a Django web app for a small team that looks after clients. Staff keep every company and contact in one place, check in seconds whether an email really comes from a client, and (in later phases) work deals, follow-ups and support tickets together.
 
-## What works today (Phase 1)
+## What works today
 
-- **Companies**: client code (`CL-0001`), status (Prospect / Client / Former), services, needs, account manager
+**Phase 1: clients**
+
+- **Companies** with a client code (`CL-0001`), status, services, needs and an account manager
 - **Sender verification**: each company stores its email domains and "how to verify" notes. Paste any address into the **Today** page and ClientDesk says whether it is a verified client contact, a known contact who is not cleared, an unknown person at a client domain, or a stranger
-- **Contacts**: linked to a company, with job title and "authorized to make requests"; one email address belongs to one contact
-- **Notes timeline** on every contact; live search, filters and sorting; CSV export (protected against formula injection)
-- **Team**: all staff see all data; administrators create staff accounts, disable them, and are the only ones who delete
-- **Accounts**: sign in, change password, forgot password, brute-force lockout. There is no public sign-up
-- **REST API** with token authentication, throttling and sender verification
-- **UI**: dark mode, mobile menu, toasts, accessible forms
+- **Contacts** linked to a company, with job title and "authorized to make requests"; one email address belongs to one contact
+- Notes timeline, live search, filters and CSV export
 
-Planned: **Phase 2** pipeline board with deals, **Phase 3** tasks and the Today queue, **Phase 4** tickets with claim/assign and email intake, **Phase 5** reports and demo polish.
+**Phase 2: tickets and reports**
+
+- **Tickets** are entered by hand (`TCK-0001`). If the requester's email matches a contact, the client is linked automatically and the sender is verified
+- **Nobody working? Say so.** The first column of the ticket list shows who is working on each ticket, or a clickable **Unassigned** button. Click it, find your name in the list, and the ticket is yours
+- Staff can take a ticket nobody has, release their own, and mark it **Done** with a note of what was done. Only admins assign tickets to other people
+- **Completed** page: every finished ticket with who finished it, when and what was done. Open one to add a follow-up note or reopen it
+- **Reports**: open and unassigned tickets, finished this week, average time to finish, a 14-day chart, tickets per team member, and the clients that ask the most
+- Every ticket has a history of who did what and when
+
+**Accounts and security**
+
+- All staff see all data. Admins create staff accounts and are the only ones who delete. No public sign-up
+- Sign in, change password, forgot password, brute-force lockout
+- REST API for companies, contacts and sender verification
 
 ## Roles
 
-| Role                       | Can do                                                                            |
-| -------------------------- | --------------------------------------------------------------------------------- |
-| Staff                      | See everything, create and edit companies and contacts, add notes, verify senders |
-| Admin (a Django superuser) | Everything staff can, plus create and disable staff accounts, and delete records  |
+| Role                       | Can do                                                                                                                        |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Staff                      | See everything, create and edit, add notes, take unassigned tickets, release their own, finish their own tickets, see reports |
+| Admin (a Django superuser) | Everything staff can, plus assign tickets to anyone, create and disable staff accounts, and delete records                    |
+
+## Live demo
+
+The demo runs on Render's free plan: **[add your link here](https://your-name.onrender.com)**. The first visit after a quiet period takes about a minute to wake up. Sign in with `demo_admin` or `ana` (the password is shown on the login page). The data is fictional and resets whenever the site sleeps, and password changes, new staff and the Django admin site are switched off in demo mode.
+
+## Putting the demo on Render (free)
+
+1. Push the project to GitHub (`.env` and `db.sqlite3` are ignored, so they are not uploaded).
+2. On Render: **New > Web Service**, connect the repository, language **Python 3**, instance type **Free**.
+3. Build command: `pip install -r requirements.txt && python manage.py collectstatic --noinput`
+4. Start command: `python manage.py migrate --noinput && python manage.py seed_demo && gunicorn dcrm.wsgi:application`
+5. Environment variables: `DJANGO_DEBUG=False`, `DJANGO_SECRET_KEY` (any long random value), `DJANGO_FORCE_HTTPS=True`, `DJANGO_BEHIND_PROXY=True`, `DEMO_MODE=True`, `WEB_CONCURRENCY=1`, `PYTHON_VERSION=3.13.5`.
+
+Render's free web services have a temporary disk, so SQLite starts empty on every wake-up. The start command rebuilds the demo data each time, which is exactly what a demo needs.
 
 ## Quick start (SQLite, no database setup)
 
@@ -35,7 +60,7 @@ python manage.py seed_demo          # optional: fictional companies, contacts an
 python manage.py runserver
 ```
 
-Open http://127.0.0.1:8000/. With the demo data, sign in as `demo_admin` or `ana` (password `demo-pass-123`), then try verifying `maria.santos@everbest.com.ph`, `someone@everbest.com.ph` and `stranger@gmail.com` on the Today page.
+Open http://127.0.0.1:8000/. With the demo data, sign in as `demo_admin` or `ana` (password `demo-pass-123`). Try verifying `maria.santos@everbest.com.ph`, `someone@everbest.com.ph` and `stranger@gmail.com` on the Today page, then open **Tickets** and take one that says Unassigned.
 
 ## REST API
 
@@ -83,7 +108,8 @@ python manage.py test
 ```
 dcrm/                project settings and root URLs
 website/
-  models.py          Company, Contact, Note
+  models.py          Company, Contact, Note, Ticket, TicketEvent
+  tickets.py         the ticket rules: claim, assign, release, done, reopen
   verification.py    verify_sender(): is this email from one of our clients?
   permissions.py     Staff and Admin
   views.py           class-based views, throttled login, CSV export, team management

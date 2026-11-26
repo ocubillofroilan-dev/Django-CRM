@@ -13,5 +13,7 @@ def app_settings(request):
         ),
         "APP_NAME": settings.APP_NAME,
         "APP_TAGLINE": settings.APP_TAGLINE,
+        "DEMO_MODE": settings.DEMO_MODE,
+        "DEMO_PASSWORD": settings.DEMO_PASSWORD,
         "is_admin": bool(user and is_admin(user)),
     }

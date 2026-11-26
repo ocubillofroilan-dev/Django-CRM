@@ -65,6 +65,17 @@ if not SECRET_KEY:
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
+# Render sets this automatically, so the live site works without extra host settings.
+RENDER_HOST = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_HOST:
+    ALLOWED_HOSTS.append(RENDER_HOST)
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_HOST}")
+
+# Public demo mode: shows a banner and the demo logins, and switches off the things a
+# visitor could use to lock others out (password changes, new staff, the Django admin site).
+DEMO_MODE = env_bool("DEMO_MODE", False)
+DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD", "demo-pass-123")
+
 
 # --------------------------------------------------------------------------
 # Applications
@@ -88,8 +99,17 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "website.demo.DemoModeMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+try:  # WhiteNoise serves the CSS/JS in production. Optional on your own computer.
+    import whitenoise  # noqa: F401
+
+    HAS_WHITENOISE = True
+    MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
+except ImportError:  # pragma: no cover
+    HAS_WHITENOISE = False
 
 ROOT_URLCONF = "dcrm.urls"
 
@@ -223,6 +243,16 @@ USE_TZ = True
 # --------------------------------------------------------------------------
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": (
+            "whitenoise.storage.CompressedStaticFilesStorage"
+            if HAS_WHITENOISE
+            else "django.contrib.staticfiles.storage.StaticFilesStorage"
+        )
+    },
+}
 
 # Map Django message levels to Bootstrap colour names.
 MESSAGE_TAGS = {
