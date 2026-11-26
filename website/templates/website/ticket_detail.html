@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% load ui_tags %}
+{% block title %}{{ ticket.number }} {{ ticket.subject }}{% endblock %}
+{% block page_title %}Ticket{% endblock %}
+
+{% block content %}
+<a class="btn btn-link px-0 mb-2 text-decoration-none" href="{% if ticket.is_done %}{% url 'ticket_completed' %}{% else %}{% url 'ticket_list' %}{% endif %}">
+  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg> {% if ticket.is_done %}Completed tickets{% else %}All tickets{% endif %}
+</a>
+
+<div class="page-head">
+  <div class="min-w-0">
+    <div class="mb-2">
+      <span class="code-badge">{{ ticket.number }}</span>
+      <span class="status ticket-{{ ticket.status }} ms-1">{% if ticket.is_unassigned %}Nobody working{% else %}{{ ticket.get_status_display }}{% endif %}</span>
+      <span class="priority priority-{{ ticket.priority }} ms-1">{{ ticket.get_priority_display }}</span>
+    </div>
+    <h1 class="text-break">{{ ticket.subject }}</h1>
+    <p>Created {{ ticket.created_at|timesince }} ago{% if ticket.created_by %} by {% firstof ticket.created_by.get_full_name ticket.created_by.get_username %}{% endif %}</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-soft" href="{% url 'ticket_edit' ticket.pk %}">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg> Edit
+    </a>
+    {% if is_admin %}
+    <a class="btn btn-outline-danger" href="{% url 'ticket_delete' ticket.pk %}" data-confirm-delete data-delete-name="{{ ticket.number }}">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-trash"/></svg> Delete
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+
+    {% if ticket.is_done %}
+    <section class="surface surface-pad verify-card done-card mb-4" aria-labelledby="done-heading">
+      <h2 class="section-title" id="done-heading">Completed</h2>
+      <p class="mb-2"><strong>{% if ticket.completed_by %}{% firstof ticket.completed_by.get_full_name ticket.completed_by.get_username %}{% else %}A former user{% endif %}</strong>
+        finished this on {{ ticket.completed_at|date:"M j, Y, g:i A" }}.</p>
+      <div class="small text-body-secondary mb-1">What was done</div>
+      <div class="prewrap mb-3">{{ ticket.resolution }}</div>
+      <form method="post" action="{% url 'ticket_reopen' ticket.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-secondary">
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg> Reopen for a follow-up
+        </button>
+      </form>
+    </section>
+    {% else %}
+    <section class="surface surface-pad verify-card mb-4" aria-labelledby="assign-heading">
+      <h2 class="section-title" id="assign-heading">Who is working on this</h2>
+      {% if ticket.assigned_to %}
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <span class="avatar avatar-h{{ ticket.assigned_to.get_username|avatar_hue }}" aria-hidden="true">{{ ticket.assigned_to.get_username|slice:":1"|upper }}</span>
+          <div>
+            <div class="fw-semibold">{% firstof ticket.assigned_to.get_full_name ticket.assigned_to.get_username %}{% if ticket.assigned_to_id == user.pk %} (you){% endif %}</div>
+            <div class="small text-body-secondary">Working on it since {{ ticket.updated_at|date:"M j, g:i A" }}</div>
+          </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          {% if is_admin or ticket.assigned_to_id == user.pk %}
+          <button type="button" class="btn btn-outline-secondary" data-assign-ticket data-assign-url="{% url 'ticket_assign' ticket.pk %}" data-ticket-number="{{ ticket.number }}" data-current="{% firstof ticket.assigned_to.get_full_name ticket.assigned_to.get_username %}" data-can-release="1">Change or release</button>
+          {% endif %}
+        </div>
+      {% else %}
+        <p class="mb-3"><strong>Nobody is working on this yet.</strong> Take it so the rest of the team knows it is handled.</p>
+        <div class="d-flex flex-wrap gap-2">
+          <form method="post" action="{% url 'ticket_assign' ticket.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="assignee" value="{{ user.pk }}">
+            <button type="submit" class="btn btn-primary">
+              <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user-plus"/></svg> Assign to me
+            </button>
+          </form>
+          <button type="button" class="btn btn-outline-secondary" data-assign-ticket data-assign-url="{% url 'ticket_assign' ticket.pk %}" data-ticket-number="{{ ticket.number }}" data-current="">Choose from the list</button>
+        </div>
+      {% endif %}
+
+      <hr>
+      {% if ticket.assigned_to_id == user.pk or is_admin or not ticket.assigned_to_id %}
+      <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#doneModal">
+        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg> Mark as Done
+      </button>
+      {% else %}
+      <p class="small text-body-secondary mb-0">Only {% firstof ticket.assigned_to.get_full_name ticket.assigned_to.get_username %} or an admin can mark this Done.</p>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    <section class="surface surface-pad mb-4" aria-labelledby="request-heading">
+      <h2 class="section-title" id="request-heading">The request</h2>
+      {% if ticket.description %}<div class="prewrap mb-3">{{ ticket.description }}</div>{% else %}<p class="text-body-secondary">No description.</p>{% endif %}
+      <dl class="detail-list">
+        <div class="detail-item">
+          <span class="detail-icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-briefcase"/></svg></span>
+          <div><dt>Company</dt><dd>{% if ticket.company %}<a href="{% url 'company_detail' ticket.company.pk %}">{{ ticket.company.name }}</a> <span class="code-badge">{{ ticket.company.code }}</span>{% else %}<span class="text-body-secondary">Not linked</span>{% endif %}</dd></div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user"/></svg></span>
+          <div><dt>Contact</dt><dd>{% if ticket.contact %}<a href="{% url 'contact_detail' ticket.contact.pk %}">{{ ticket.contact.full_name }}</a>{% else %}<span class="text-body-secondary">Not linked</span>{% endif %}</dd></div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg></span>
+          <div><dt>Requester email</dt><dd>{% if ticket.requester_email %}<a href="mailto:{{ ticket.requester_email }}">{{ ticket.requester_email }}</a>{% else %}<span class="text-body-secondary">Not recorded</span>{% endif %}</dd></div>
+        </div>
+      </dl>
+    </section>
+
+    {% if verification %}
+    <section aria-label="Sender verification">
+      {% include "website/_verification.html" with v=verification %}
+    </section>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-7">
+    <section class="surface surface-pad" id="history" aria-labelledby="history-heading">
+      <h2 class="section-title" id="history-heading">History and notes</h2>
+      <form method="post" action="{% url 'ticket_comment' ticket.pk %}">
+        {% csrf_token %}
+        <label for="{{ comment_form.body.id_for_label }}" class="visually-hidden">{{ comment_form.body.label }}</label>
+        {{ comment_form.body }}
+        <div class="d-flex justify-content-end mt-2">
+          <button type="submit" class="btn btn-primary btn-sm">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-message"/></svg> Add note
+          </button>
+        </div>
+      </form>
+
+      <ul class="timeline">
+        {% for e in ticket.events.all reversed %}
+        <li class="timeline-item">
+          <span class="avatar avatar-sm avatar-h{{ e.actor.get_username|avatar_hue }}" aria-hidden="true">{{ e.actor.get_username|slice:":1"|upper|default:"?" }}</span>
+          <div class="timeline-body">
+            <div>
+              <strong>{% if e.actor %}{% firstof e.actor.get_full_name e.actor.get_username %}{% else %}Former user{% endif %}</strong>
+              {% if e.kind != 'comment' %}<span class="event-text">{{ e.text }}</span>{% endif %}
+              <span class="text-body-secondary small ms-1" title="{{ e.created_at|date:'M j, Y, g:i A' }}">{{ e.created_at|timesince }} ago</span>
+            </div>
+            {% if e.kind == 'comment' %}<p>{{ e.text }}</p>{% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+</div>
+
+<div class="modal fade" id="doneModal" tabindex="-1" aria-labelledby="doneModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'ticket_done' ticket.pk %}">
+        {% csrf_token %}
+        <div class="modal-body p-4">
+          <h2 class="h5 mb-1" id="doneModalTitle">Mark {{ ticket.number }} as Done</h2>
+          <p class="text-body-secondary">Write what was done, so anyone can check that this is complete and follow up if needed.</p>
+          <label for="{{ done_form.resolution.id_for_label }}" class="form-label fw-medium">{{ done_form.resolution.label }}</label>
+          {{ done_form.resolution }}
+        </div>
+        <div class="modal-footer border-0 pt-0 px-4 pb-4">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-no-loading>Cancel</button>
+          <button type="submit" class="btn btn-success">Mark as Done</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% include "website/_delete_modal.html" %}
+{% include "website/_assign_modal.html" %}
+{% endblock %}

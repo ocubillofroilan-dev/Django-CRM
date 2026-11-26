@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<a class="btn btn-link px-0 mb-2 text-decoration-none" href="{% if object %}{% url 'ticket_detail' object.pk %}{% else %}{% url 'ticket_list' %}{% endif %}">
+  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg> {% if object %}Back to ticket{% else %}All tickets{% endif %}
+</a>
+
+<div class="page-head">
+  <div>
+    <h1>{{ page_title }}</h1>
+    <p>Enter the request here. If the sender's email matches a contact, the client is linked automatically.</p>
+  </div>
+</div>
+
+<form method="post" class="surface surface-pad form-card">
+  {% csrf_token %}
+  {% include "website/_form_errors.html" %}
+
+  <h2 class="section-title">The request</h2>
+  {% include "website/_field.html" with field=form.subject %}
+  {% include "website/_field.html" with field=form.description %}
+
+  <h2 class="section-title mt-3">Who asked</h2>
+  {% include "website/_field.html" with field=form.requester_email %}
+  <div class="row">
+    <div class="col-md-6">{% include "website/_field.html" with field=form.company %}</div>
+    <div class="col-md-6">{% include "website/_field.html" with field=form.contact %}</div>
+  </div>
+
+  <h2 class="section-title mt-3">Priority</h2>
+  <div class="row">
+    <div class="col-md-6">{% include "website/_field.html" with field=form.priority %}</div>
+  </div>
+  {% if form.claim_now %}
+    {% include "website/_field.html" with field=form.claim_now %}
+  {% endif %}
+
+  <div class="d-flex flex-wrap gap-2 justify-content-end border-top pt-3 mt-2">
+    <a class="btn btn-outline-secondary" href="{% if object %}{% url 'ticket_detail' object.pk %}{% else %}{% url 'ticket_list' %}{% endif %}">Cancel</a>
+    <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
+  </div>
+</form>
+{% endblock %}

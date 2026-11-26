@@ -3,7 +3,7 @@
 
 {% block content %}
 <h1>Welcome back</h1>
-<p class="text-body-secondary mb-4">Sign in to manage your customers.</p>
+<p class="text-body-secondary mb-4">Sign in to {{ APP_NAME }}.</p>
 
 {% if locked %}
 <div class="alert alert-warning d-flex gap-2" role="alert">
@@ -22,7 +22,5 @@
   <button type="submit" class="btn btn-primary w-100 py-2">Sign in</button>
 </form>
 
-{% if ALLOW_REGISTRATION %}
-<p class="text-center text-body-secondary mt-4 mb-0">New here? <a href="{% url 'register' %}">Create an account</a></p>
-{% endif %}
+<p class="text-center text-body-secondary small mt-4 mb-0">Accounts are created by your administrator.</p>
 {% endblock %}

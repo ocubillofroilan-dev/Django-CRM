@@ -4,15 +4,16 @@
   <section class="auth-hero">
     <a class="brand" href="{% url 'login' %}">
       <span class="brand-mark"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg></span>
-      <span>CRM</span>
+      <span>{{ APP_NAME }}</span>
     </a>
     <div>
-      <h2>Know your customers. Keep every conversation.</h2>
+      <p class="auth-eyebrow">{{ APP_TAGLINE }}</p>
+      <h2>Respond faster. Remember everything.</h2>
       <ul>
-        <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg> Private by default: you only see the customers you own</li>
-        <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg> Instant search, filters and one-click CSV export</li>
-        <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg> A notes timeline on every customer</li>
-        <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg> A secure REST API for your own tools</li>
+        <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-shield-check"/></svg> Check in seconds whether a sender is really your client</li>
+        <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-briefcase"/></svg> Companies, contacts and their needs in one place</li>
+        <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-inbox"/></svg> Claim a request so the whole team knows it's handled</li>
+        <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-code"/></svg> A secure REST API for your own tools</li>
       </ul>
     </div>
     <p class="small mb-0 opacity-75">Built with Django · Bootstrap 5</p>

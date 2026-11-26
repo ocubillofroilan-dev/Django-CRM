@@ -1,0 +1,69 @@
+{% load ui_tags %}
+<div data-result-summary="{{ paginator.count }} compan{{ paginator.count|pluralize:'y,ies' }} found">
+{% if companies %}
+  <div class="table-responsive">
+    <table class="table table-crm align-middle">
+      <caption class="visually-hidden">Companies</caption>
+      <thead>
+        <tr>
+          <th scope="col">Company</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="d-none d-md-table-cell">Contacts</th>
+          <th scope="col" class="d-none d-lg-table-cell">Industry</th>
+          <th scope="col" class="d-none d-xl-table-cell">Account manager</th>
+          <th scope="col" class="text-end"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in companies %}
+        <tr data-href="{% url 'company_detail' c.pk %}">
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              <span class="avatar avatar-square avatar-h{{ c.name|avatar_hue }}" aria-hidden="true">{{ c.initials }}</span>
+              <div class="min-w-0">
+                <a class="name-link" href="{% url 'company_detail' c.pk %}">{{ c.name }}</a>
+                <div class="small text-body-secondary"><span class="code-badge">{{ c.code }}</span>{% if c.email_domains %} {{ c.email_domains }}{% endif %}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="status status-{{ c.status }}">{{ c.get_status_display }}</span></td>
+          <td class="d-none d-md-table-cell">{{ c.contact_count }}</td>
+          <td class="d-none d-lg-table-cell">{{ c.industry|default:"" }}</td>
+          <td class="d-none d-xl-table-cell">{% if c.account_manager %}{% firstof c.account_manager.get_full_name c.account_manager.get_username %}{% else %}<span class="text-body-secondary">Unassigned</span>{% endif %}</td>
+          <td class="text-end">
+            <div class="row-actions">
+              <a class="btn btn-soft btn-icon btn-sm" href="{% url 'company_edit' c.pk %}" aria-label="Edit {{ c.name }}" title="Edit">
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg>
+              </a>
+              {% if is_admin %}
+              <a class="btn btn-icon btn-sm btn-outline-danger" href="{% url 'company_delete' c.pk %}" data-confirm-delete data-delete-name="{{ c.name }}" aria-label="Delete {{ c.name }}" title="Delete">
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-trash"/></svg>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="results-meta">
+    <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ paginator.count }}</span>
+    {% include "website/_pagination.html" %}
+  </div>
+{% elif has_filters %}
+  <div class="empty">
+    <div class="empty-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-search"/></svg></div>
+    <h2 class="h5">No companies match your search</h2>
+    <p class="text-body-secondary mb-3">Try a different word, or remove a filter.</p>
+    <a class="btn btn-soft" href="{% url 'company_list' %}" data-clear-filters>Clear filters</a>
+  </div>
+{% else %}
+  <div class="empty">
+    <div class="empty-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-briefcase"/></svg></div>
+    <h2 class="h5">No companies yet</h2>
+    <p class="text-body-secondary mb-3">Add a client or prospect to start building their profile.</p>
+    <a class="btn btn-primary" href="{% url 'company_add' %}"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg> Add a company</a>
+  </div>
+{% endif %}
+</div>

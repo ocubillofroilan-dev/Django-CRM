@@ -115,7 +115,7 @@
       if (!trigger) return;
       event.preventDefault();
       deleteModalElement.querySelector("form").setAttribute("action", trigger.getAttribute("data-delete-url") || trigger.getAttribute("href"));
-      deleteModalElement.querySelector("[data-delete-name]").textContent = trigger.getAttribute("data-delete-name") || "this customer";
+      deleteModalElement.querySelector("[data-delete-name]").textContent = trigger.getAttribute("data-delete-name") || "this record";
       deleteModal.show();
     });
   }

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% load ui_tags %}
+{% block title %}{{ company.name }}{% endblock %}
+{% block page_title %}Company{% endblock %}
+
+{% block content %}
+<a class="btn btn-link px-0 mb-2 text-decoration-none" href="{% url 'company_list' %}">
+  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg> All companies
+</a>
+
+<div class="page-head">
+  <div class="d-flex align-items-center gap-3 min-w-0">
+    <span class="avatar avatar-lg avatar-square avatar-h{{ company.name|avatar_hue }}" aria-hidden="true">{{ company.initials }}</span>
+    <div class="min-w-0">
+      <h1 class="text-break">{{ company.name }}</h1>
+      <p>
+        <span class="code-badge">{{ company.code }}</span>
+        <span class="status status-{{ company.status }} ms-1">{{ company.get_status_display }}</span>
+        {% if company.industry %}<span class="ms-2">{{ company.industry }}</span>{% endif %}
+      </p>
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-primary" href="{% url 'company_edit' company.pk %}">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg> Edit
+    </a>
+    {% if is_admin %}
+    <a class="btn btn-outline-danger" href="{% url 'company_delete' company.pk %}" data-confirm-delete data-delete-name="{{ company.name }}">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-trash"/></svg> Delete
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <section class="surface surface-pad verify-card mb-4" aria-labelledby="verify-heading">
+      <h2 class="section-title" id="verify-heading">Verify this client</h2>
+      <div class="mb-3">
+        <div class="small text-body-secondary mb-1">Email domains</div>
+        {% if company.domains %}
+          {% for d in company.domains %}<span class="chip">@{{ d }}</span> {% endfor %}
+        {% else %}<span class="text-body-secondary">None recorded. Edit this company to add them.</span>{% endif %}
+      </div>
+      <div>
+        <div class="small text-body-secondary mb-1">How to verify</div>
+        {% if company.verification_notes %}<div class="prewrap">{{ company.verification_notes }}</div>
+        {% else %}<span class="text-body-secondary">No verification notes yet.</span>{% endif %}
+      </div>
+    </section>
+
+    <section class="surface surface-pad mb-4" aria-labelledby="profile-heading">
+      <h2 class="section-title" id="profile-heading">Services and needs</h2>
+      <div class="mb-3">
+        <div class="small text-body-secondary mb-1">Plan or services</div>
+        {% if company.services %}<div class="prewrap">{{ company.services }}</div>{% else %}<span class="text-body-secondary">Nothing recorded.</span>{% endif %}
+      </div>
+      <div>
+        <div class="small text-body-secondary mb-1">What they need</div>
+        {% if company.needs %}<div class="prewrap">{{ company.needs }}</div>{% else %}<span class="text-body-secondary">Nothing recorded.</span>{% endif %}
+      </div>
+    </section>
+
+    <section class="surface surface-pad" aria-labelledby="details-heading">
+      <h2 class="section-title" id="details-heading">Details</h2>
+      <dl class="detail-list">
+        {% if company.website %}
+        <div class="detail-item">
+          <span class="detail-icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-globe"/></svg></span>
+          <div><dt>Website</dt><dd><a href="{{ company.website }}" rel="noopener noreferrer" target="_blank">{{ company.website }}</a></dd></div>
+        </div>
+        {% endif %}
+        {% if company.phone %}
+        <div class="detail-item">
+          <span class="detail-icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg></span>
+          <div><dt>Phone</dt><dd><a href="tel:{{ company.phone }}">{{ company.phone }}</a></dd></div>
+        </div>
+        {% endif %}
+        {% if company.address or company.city %}
+        <div class="detail-item">
+          <span class="detail-icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg></span>
+          <div><dt>Address</dt><dd>{% if company.address %}{{ company.address }}<br>{% endif %}{{ company.city }}{% if company.province %}, {{ company.province }}{% endif %} {{ company.zipcode }}</dd></div>
+        </div>
+        {% endif %}
+        <div class="detail-item">
+          <span class="detail-icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user"/></svg></span>
+          <div><dt>Account manager</dt><dd>{% if company.account_manager %}{% firstof company.account_manager.get_full_name company.account_manager.get_username %}{% else %}<span class="text-body-secondary">Unassigned</span>{% endif %}</dd></div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg></span>
+          <div><dt>Added</dt><dd>{{ company.created_at|date:"M j, Y" }}</dd></div>
+        </div>
+      </dl>
+    </section>
+  </div>
+
+  <div class="col-lg-7">
+    <section class="surface overflow-hidden" aria-labelledby="people-heading">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 p-3 border-bottom">
+        <h2 class="section-title mb-0" id="people-heading">Contacts ({{ contacts|length }})</h2>
+        <a class="btn btn-soft btn-sm" href="{% url 'contact_add' %}?company={{ company.pk }}">
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user-plus"/></svg> Add contact
+        </a>
+      </div>
+      {% if contacts %}
+      <div class="table-responsive">
+        <table class="table table-crm align-middle">
+          <caption class="visually-hidden">Contacts at {{ company.name }}</caption>
+          <thead><tr><th scope="col">Person</th><th scope="col" class="d-none d-md-table-cell">Phone</th><th scope="col">Can request</th></tr></thead>
+          <tbody>
+            {% for c in contacts %}
+            <tr data-href="{% url 'contact_detail' c.pk %}">
+              <td>
+                <div class="d-flex align-items-center gap-3">
+                  <span class="avatar avatar-sm avatar-h{{ c.full_name|avatar_hue }}" aria-hidden="true">{{ c.initials }}</span>
+                  <div class="min-w-0">
+                    <a class="name-link" href="{% url 'contact_detail' c.pk %}">{{ c.full_name }}</a>
+                    <div class="small text-body-secondary text-truncate">{% if c.job_title %}{{ c.job_title }} · {% endif %}{{ c.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="d-none d-md-table-cell">{{ c.phone }}</td>
+              <td>{% if c.can_request %}<span class="status status-active">Yes</span>{% else %}<span class="status status-inactive">No</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty">
+        <div class="empty-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-users"/></svg></div>
+        <h3 class="h6">No contacts yet</h3>
+        <p class="text-body-secondary mb-0">Add the people who contact us on behalf of {{ company.name }}.</p>
+      </div>
+      {% endif %}
+    </section>
+  </div>
+</div>
+
+{% include "website/_delete_modal.html" %}
+{% endblock %}

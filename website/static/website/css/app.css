@@ -276,6 +276,48 @@ a { text-underline-offset: 3px; }
 .card-narrow { max-width: 28rem; }
 .min-w-0 { min-width: 0; }
 
+
+/* ---------- 6b. ClientDesk additions ------------------------------------ */
+.sidebar nav { flex: 1 1 auto; overflow-y: auto; min-height: 0; }
+.pill-soon { margin-left: auto; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 0.1rem 0.45rem; border-radius: 999px; background: var(--crm-brand-soft); color: var(--crm-brand-600); }
+[data-bs-theme="dark"] .pill-soon { color: var(--crm-brand); }
+
+.avatar-square { border-radius: 12px; }
+.code-badge { display: inline-block; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.03em; padding: 0.08rem 0.45rem; border-radius: 6px; background: var(--crm-surface-2); border: 1px solid var(--crm-border); color: var(--crm-muted); font-variant-numeric: tabular-nums; }
+.chip { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; background: var(--crm-brand-soft); color: var(--crm-brand-600); font-size: 0.82rem; font-weight: 500; margin: 0 0.25rem 0.25rem 0; }
+[data-bs-theme="dark"] .chip { color: var(--crm-brand); }
+
+.status-client { background: rgba(16, 185, 129, 0.14); color: #047857; }
+.status-prospect { background: rgba(245, 158, 11, 0.14); color: #b45309; }
+.status-former { background: rgba(100, 116, 139, 0.15); color: #475569; }
+[data-bs-theme="dark"] .status-client { color: #34d399; }
+[data-bs-theme="dark"] .status-prospect { color: #fbbf24; }
+[data-bs-theme="dark"] .status-former { color: #cbd5e1; }
+
+.verify-form { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.verify-form .form-control { flex: 1 1 16rem; }
+.verify-result { border: 1px solid var(--crm-border); border-left-width: 4px; border-radius: var(--crm-radius-sm); padding: 1rem 1.1rem; background: var(--crm-surface); }
+.verify-icon { flex-shrink: 0; width: 2.4rem; height: 2.4rem; border-radius: 50%; display: grid; place-items: center; }
+.verify-success { border-left-color: #10b981; }
+.verify-success .verify-icon { background: rgba(16, 185, 129, 0.14); color: #047857; }
+.verify-warning { border-left-color: #f59e0b; }
+.verify-warning .verify-icon { background: rgba(245, 158, 11, 0.16); color: #b45309; }
+.verify-danger { border-left-color: #ef4444; }
+.verify-danger .verify-icon { background: rgba(239, 68, 68, 0.14); color: #b91c1c; }
+.verify-secondary { border-left-color: var(--crm-muted); }
+.verify-secondary .verify-icon { background: var(--crm-surface-2); color: var(--crm-muted); }
+[data-bs-theme="dark"] .verify-success .verify-icon { color: #34d399; }
+[data-bs-theme="dark"] .verify-warning .verify-icon { color: #fbbf24; }
+[data-bs-theme="dark"] .verify-danger .verify-icon { color: #f87171; }
+.verify-notes { background: var(--crm-surface-2); border-radius: 8px; padding: 0.7rem 0.85rem; }
+.verify-card { border-left: 4px solid var(--crm-brand); }
+
+.list-row { display: flex; align-items: center; gap: 0.85rem; padding: 0.8rem 1rem; text-decoration: none; color: var(--bs-body-color); border-bottom: 1px solid var(--crm-border); transition: background 0.12s ease; }
+.list-row:last-child { border-bottom: 0; }
+.list-row:hover { background: var(--crm-surface-2); color: var(--bs-body-color); }
+
+.auth-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.78rem; font-weight: 600; opacity: 0.85; margin-bottom: 0.75rem; }
+
 /* ---------- 7. Motion & print ------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }

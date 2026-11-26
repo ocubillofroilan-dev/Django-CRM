@@ -1,0 +1,65 @@
+{% load ui_tags %}
+<div data-result-summary="{{ paginator.count }} completed ticket{{ paginator.count|pluralize }} found">
+{% if tickets %}
+  <div class="table-responsive">
+    <table class="table table-crm align-middle">
+      <caption class="visually-hidden">Completed tickets</caption>
+      <thead>
+        <tr>
+          <th scope="col">Completed by</th>
+          <th scope="col">Ticket</th>
+          <th scope="col" class="d-none d-lg-table-cell">What was done</th>
+          <th scope="col" class="d-none d-md-table-cell">Completed</th>
+          <th scope="col" class="text-end"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tickets %}
+        <tr data-href="{% url 'ticket_detail' t.pk %}">
+          <td>
+            <span class="assignee-btn is-static">
+              <span class="avatar avatar-sm avatar-h{{ t.completed_by.get_username|avatar_hue }}" aria-hidden="true">{{ t.completed_by.get_username|slice:":1"|upper|default:"?" }}</span>
+              <span class="assignee-name">{% if t.completed_by %}{% firstof t.completed_by.get_full_name t.completed_by.get_username %}{% else %}Former user{% endif %}</span>
+            </span>
+          </td>
+          <td>
+            <div class="min-w-0">
+              <a class="name-link" href="{% url 'ticket_detail' t.pk %}">{{ t.subject }}</a>
+              <div class="small text-body-secondary text-truncate">
+                <span class="code-badge">{{ t.number }}</span>
+                {% if t.company %}{{ t.company.name }}{% elif t.requester_email %}{{ t.requester_email }}{% endif %}
+              </div>
+            </div>
+          </td>
+          <td class="d-none d-lg-table-cell resolution-cell">{{ t.resolution|truncatechars:110 }}</td>
+          <td class="d-none d-md-table-cell small">
+            <span class="status ticket-done">Done</span>
+            <div class="text-body-secondary mt-1" title="{{ t.completed_at|date:'M j, Y, g:i A' }}">{{ t.completed_at|timesince }} ago</div>
+          </td>
+          <td class="text-end">
+            <a class="btn btn-soft btn-sm" href="{% url 'ticket_detail' t.pk %}">Follow up</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="results-meta">
+    <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ paginator.count }}</span>
+    {% include "website/_pagination.html" %}
+  </div>
+{% elif has_filters %}
+  <div class="empty">
+    <div class="empty-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-search"/></svg></div>
+    <h2 class="h5">No completed tickets match</h2>
+    <p class="text-body-secondary mb-3">Try a longer period or remove a filter.</p>
+    <a class="btn btn-soft" href="{% url 'ticket_completed' %}" data-clear-filters>Clear filters</a>
+  </div>
+{% else %}
+  <div class="empty">
+    <div class="empty-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-check-square"/></svg></div>
+    <h2 class="h5">Nothing completed in this period</h2>
+    <p class="text-body-secondary mb-0">Tickets marked Done will appear here.</p>
+  </div>
+{% endif %}
+</div>

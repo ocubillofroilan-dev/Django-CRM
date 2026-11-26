@@ -163,8 +163,9 @@ LOGOUT_REDIRECT_URL = "login"
 LOGIN_MAX_ATTEMPTS = int(os.environ.get("LOGIN_MAX_ATTEMPTS", "5"))
 LOGIN_LOCKOUT_SECONDS = int(os.environ.get("LOGIN_LOCKOUT_SECONDS", "900"))
 
-# Set to False to close public sign-up (admins then create users in /admin/).
-ALLOW_REGISTRATION = env_bool("ALLOW_REGISTRATION", True)
+# Product name shown in the UI and emails.
+APP_NAME = "ClientDesk"
+APP_TAGLINE = "Client Relationship Management"
 
 # Sessions
 SESSION_COOKIE_AGE = 60 * 60 * 12  # 12 hours
@@ -205,7 +206,7 @@ if os.environ.get("EMAIL_HOST"):
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "CRM <no-reply@localhost>")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "ClientDesk <no-reply@localhost>")
 
 
 # --------------------------------------------------------------------------

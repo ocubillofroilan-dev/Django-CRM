@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Add staff{% endblock %}
+{% block page_title %}Add staff{% endblock %}
+
+{% block content %}
+<a class="btn btn-link px-0 mb-2 text-decoration-none" href="{% url 'team_list' %}">
+  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg> Team
+</a>
+<div class="page-head">
+  <div>
+    <h1>Add a staff member</h1>
+    <p>They can see all clients and contacts, create and edit records, and claim work. Ask them to change the temporary password after signing in.</p>
+  </div>
+</div>
+
+<form method="post" class="surface surface-pad form-card">
+  {% csrf_token %}
+  {% include "website/_form_errors.html" %}
+  <div class="row">
+    <div class="col-md-6">{% include "website/_field.html" with field=form.first_name %}</div>
+    <div class="col-md-6">{% include "website/_field.html" with field=form.last_name %}</div>
+  </div>
+  {% include "website/_field.html" with field=form.email %}
+  {% include "website/_field.html" with field=form.username %}
+  {% include "website/_field.html" with field=form.password1 %}
+  {% include "website/_field.html" with field=form.password2 %}
+  <div class="d-flex flex-wrap gap-2 justify-content-end border-top pt-3 mt-2">
+    <a class="btn btn-outline-secondary" href="{% url 'team_list' %}">Cancel</a>
+    <button type="submit" class="btn btn-primary">Create account</button>
+  </div>
+</form>
+{% endblock %}

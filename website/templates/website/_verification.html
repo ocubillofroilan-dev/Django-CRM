@@ -1,0 +1,46 @@
+{% load ui_tags %}
+<div class="verify-result verify-{{ v.tone }}" role="status">
+  <div class="d-flex gap-3">
+    <span class="verify-icon">
+      <svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="{% if v.level == 'verified' %}#i-shield-check{% elif v.level == 'invalid' %}#i-search{% else %}#i-alert{% endif %}"/></svg>
+    </span>
+    <div class="min-w-0">
+      <div class="fw-semibold">{{ v.headline }}</div>
+      <div class="small">{{ v.advice }}</div>
+
+      {% if v.contact %}
+        <div class="small mt-2"><strong>Person:</strong>
+          <a href="{% url 'contact_detail' v.contact.pk %}">{{ v.contact.full_name }}</a>{% if v.contact.job_title %} · {{ v.contact.job_title }}{% endif %}
+          {% if not v.contact.can_request %}<span class="status status-inactive ms-1">Not authorized to request</span>{% endif %}
+        </div>
+      {% endif %}
+
+      {% if v.company %}
+        <div class="small mt-1"><strong>Company:</strong>
+          <a href="{% url 'company_detail' v.company.pk %}">{{ v.company.name }}</a>
+          <span class="code-badge">{{ v.company.code }}</span>
+          <span class="status status-{{ v.company.status }}">{{ v.company.get_status_display }}</span>
+        </div>
+        {% if v.company.verification_notes %}
+          <div class="verify-notes mt-2">
+            <div class="section-title mb-1">How to verify</div>
+            <div class="prewrap">{{ v.company.verification_notes }}</div>
+          </div>
+        {% endif %}
+        {% with registered=v.company.contacts.all|slice:":6" %}
+          {% if registered %}
+          <div class="small mt-2"><strong>Registered contacts:</strong>
+            {% for c in registered %}{{ c.full_name }}{% if c.job_title %} ({{ c.job_title }}){% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}
+          </div>
+          {% endif %}
+        {% endwith %}
+      {% endif %}
+
+      {% if v.level == "unverified" %}
+        <a class="btn btn-sm btn-soft mt-3" href="{% url 'contact_add' %}?email={{ v.email|urlencode }}">
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user-plus"/></svg> Add as a new contact
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>

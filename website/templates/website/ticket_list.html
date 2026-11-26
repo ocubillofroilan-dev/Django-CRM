@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Tickets{% endblock %}
+{% block page_title %}Tickets{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Tickets</h1>
+    <p>Client requests that are not finished yet. See who is working on each one, or take one that nobody has.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'ticket_completed' %}">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-square"/></svg> Completed
+    </a>
+    <a class="btn btn-primary" href="{% url 'ticket_add' %}">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg> New ticket
+    </a>
+  </div>
+</div>
+
+<nav class="tabs mb-3" aria-label="Ticket views">
+  {% for key, label, count in tabs %}
+  <a class="tab-link {% if tab == key %}is-active{% endif %}" href="?view={{ key }}" {% if tab == key %}aria-current="page"{% endif %}>
+    {{ label }} <span class="tab-count {% if key == 'unassigned' and count %}is-alert{% endif %}">{{ count }}</span>
+  </a>
+  {% endfor %}
+</nav>
+
+<form class="surface toolbar mb-3" method="get" action="{% url 'ticket_list' %}" role="search" data-live-search>
+  <input type="hidden" name="view" value="{{ tab }}">
+  <div class="search-box">
+    <label for="q" class="visually-hidden">Search tickets</label>
+    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
+    <input type="search" id="q" name="q" value="{{ q }}" class="form-control" placeholder="Search number, subject, company or email" autocomplete="off" data-search-input />
+    <kbd aria-hidden="true">/</kbd>
+  </div>
+  <div>
+    <label for="priority" class="visually-hidden">Priority</label>
+    <select id="priority" name="priority" class="form-select">
+      <option value="">Any priority</option>
+      {% for value, label in priority_choices %}<option value="{{ value }}" {% if value == priority %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="sort" class="visually-hidden">Sort by</label>
+    <select id="sort" name="sort" class="form-select">
+      {% for value, label in sort_options %}<option value="{{ value }}" {% if value == sort %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <button class="visually-hidden" type="submit" data-no-loading>Search</button>
+  <noscript><button class="btn btn-soft" type="submit">Apply</button></noscript>
+</form>
+
+<div class="visually-hidden" role="status" id="resultsStatus"></div>
+<section class="surface overflow-hidden" aria-label="Ticket list">
+  <div id="results">{% include "website/_ticket_results.html" %}</div>
+</section>
+
+{% include "website/_delete_modal.html" %}
+{% include "website/_assign_modal.html" %}
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load ui_tags %}
+{% block title %}Team{% endblock %}
+{% block page_title %}Team{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Team</h1>
+    <p>Everyone who can sign in. Only administrators see this page.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'team_add' %}">
+    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user-plus"/></svg> Add staff
+  </a>
+</div>
+
+<section class="surface overflow-hidden" aria-label="Team members">
+  <div class="table-responsive">
+    <table class="table table-crm align-middle">
+      <caption class="visually-hidden">Team members</caption>
+      <thead>
+        <tr>
+          <th scope="col">Member</th>
+          <th scope="col">Role</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="d-none d-md-table-cell">Last sign-in</th>
+          <th scope="col" class="text-end"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in members %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              <span class="avatar avatar-sm avatar-h{{ m.get_username|avatar_hue }}" aria-hidden="true">{{ m.get_username|slice:":1"|upper }}</span>
+              <div class="min-w-0">
+                <div class="fw-semibold">{% firstof m.get_full_name m.get_username %}</div>
+                <div class="small text-body-secondary text-truncate">{{ m.get_username }}{% if m.email %} · {{ m.email }}{% endif %}</div>
+              </div>
+            </div>
+          </td>
+          <td>{% if m.is_superuser %}Admin{% else %}Staff{% endif %}</td>
+          <td>{% if m.is_active %}<span class="status status-active">Active</span>{% else %}<span class="status status-inactive">Disabled</span>{% endif %}</td>
+          <td class="d-none d-md-table-cell text-body-secondary small">{% if m.last_login %}{{ m.last_login|timesince }} ago{% else %}Never{% endif %}</td>
+          <td class="text-end">
+            {% if not m.is_superuser and m.pk != user.pk %}
+            <form method="post" action="{% url 'team_toggle' m.pk %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm {% if m.is_active %}btn-outline-danger{% else %}btn-soft{% endif %}" data-no-loading>
+                {% if m.is_active %}Disable{% else %}Enable{% endif %}
+              </button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

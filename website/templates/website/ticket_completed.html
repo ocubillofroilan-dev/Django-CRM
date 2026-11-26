@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Completed tickets{% endblock %}
+{% block page_title %}Completed{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Completed tickets</h1>
+    <p>Everything that is finished. Open one to follow up, or reopen it if the client needs more.</p>
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'ticket_list' %}">
+    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-inbox"/></svg> Open tickets
+  </a>
+</div>
+
+<form class="surface toolbar mb-3" method="get" action="{% url 'ticket_completed' %}" role="search" data-live-search>
+  <div class="search-box">
+    <label for="q" class="visually-hidden">Search completed tickets</label>
+    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
+    <input type="search" id="q" name="q" value="{{ q }}" class="form-control" placeholder="Search number, subject, company or what was done" autocomplete="off" data-search-input />
+    <kbd aria-hidden="true">/</kbd>
+  </div>
+  <div>
+    <label for="by" class="visually-hidden">Completed by</label>
+    <select id="by" name="by" class="form-select">
+      <option value="">Anyone</option>
+      {% for m in staff %}<option value="{{ m.pk }}" {% if by == m.pk|stringformat:"s" %}selected{% endif %}>{% firstof m.get_full_name m.get_username %}</option>{% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="period" class="visually-hidden">Period</label>
+    <select id="period" name="period" class="form-select">
+      {% for value, label in period_choices %}<option value="{{ value }}" {% if value == period %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <button class="visually-hidden" type="submit" data-no-loading>Search</button>
+  <noscript><button class="btn btn-soft" type="submit">Apply</button></noscript>
+</form>
+
+<div class="visually-hidden" role="status" id="resultsStatus"></div>
+<section class="surface overflow-hidden" aria-label="Completed tickets">
+  <div id="results">{% include "website/_completed_results.html" %}</div>
+</section>
+{% endblock %}

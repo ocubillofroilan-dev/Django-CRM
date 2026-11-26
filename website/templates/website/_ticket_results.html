@@ -1,0 +1,94 @@
+{% load ui_tags %}
+<div data-result-summary="{{ paginator.count }} ticket{{ paginator.count|pluralize }} found">
+{% if tickets %}
+  <div class="table-responsive">
+    <table class="table table-crm align-middle">
+      <caption class="visually-hidden">Open tickets</caption>
+      <thead>
+        <tr>
+          <th scope="col">Working on it</th>
+          <th scope="col">Ticket</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="d-none d-md-table-cell">Priority</th>
+          <th scope="col" class="d-none d-lg-table-cell">Created</th>
+          <th scope="col" class="text-end"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tickets %}
+        <tr data-href="{% url 'ticket_detail' t.pk %}">
+          <td class="assign-cell">
+            {% if t.assigned_to %}
+              {% if is_admin or t.assigned_to_id == user.pk %}
+              <a href="{% url 'ticket_detail' t.pk %}" class="assignee-btn" data-assign-ticket data-assign-url="{% url 'ticket_assign' t.pk %}" data-ticket-number="{{ t.number }}" data-current="{% firstof t.assigned_to.get_full_name t.assigned_to.get_username %}" data-can-release="1" title="Change who is working on this">
+                <span class="avatar avatar-sm avatar-h{{ t.assigned_to.get_username|avatar_hue }}" aria-hidden="true">{{ t.assigned_to.get_username|slice:":1"|upper }}</span>
+                <span class="assignee-name">{% firstof t.assigned_to.get_full_name t.assigned_to.get_username %}</span>
+              </a>
+              {% else %}
+              <span class="assignee-btn is-static">
+                <span class="avatar avatar-sm avatar-h{{ t.assigned_to.get_username|avatar_hue }}" aria-hidden="true">{{ t.assigned_to.get_username|slice:":1"|upper }}</span>
+                <span class="assignee-name">{% firstof t.assigned_to.get_full_name t.assigned_to.get_username %}</span>
+              </span>
+              {% endif %}
+            {% else %}
+              <a href="{% url 'ticket_detail' t.pk %}" class="assignee-btn is-empty" data-assign-ticket data-assign-url="{% url 'ticket_assign' t.pk %}" data-ticket-number="{{ t.number }}" data-current="" title="Nobody is working on this. Click to take it.">
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user-plus"/></svg>
+                <span class="assignee-name">Unassigned</span>
+              </a>
+            {% endif %}
+          </td>
+          <td>
+            <div class="min-w-0">
+              <a class="name-link" href="{% url 'ticket_detail' t.pk %}">{{ t.subject }}</a>
+              <div class="small text-body-secondary text-truncate">
+                <span class="code-badge">{{ t.number }}</span>
+                {% if t.company %}{{ t.company.name }}{% elif t.requester_email %}{{ t.requester_email }}{% else %}No client linked{% endif %}
+              </div>
+            </div>
+          </td>
+          <td><span class="status ticket-{{ t.status }}">{% if t.is_unassigned %}Nobody working{% else %}{{ t.get_status_display }}{% endif %}</span></td>
+          <td class="d-none d-md-table-cell"><span class="priority priority-{{ t.priority }}">{{ t.get_priority_display }}</span></td>
+          <td class="d-none d-lg-table-cell text-body-secondary small">{{ t.created_at|timesince }} ago</td>
+          <td class="text-end">
+            <div class="row-actions">
+              <a class="btn btn-soft btn-icon btn-sm" href="{% url 'ticket_edit' t.pk %}" aria-label="Edit {{ t.number }}" title="Edit">
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-edit"/></svg>
+              </a>
+              {% if is_admin %}
+              <a class="btn btn-icon btn-sm btn-outline-danger" href="{% url 'ticket_delete' t.pk %}" data-confirm-delete data-delete-name="{{ t.number }}" aria-label="Delete {{ t.number }}" title="Delete">
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-trash"/></svg>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="results-meta">
+    <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ paginator.count }}</span>
+    {% include "website/_pagination.html" %}
+  </div>
+{% elif tab == "unassigned" and not q and not priority %}
+  <div class="empty">
+    <div class="empty-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></div>
+    <h2 class="h5">Everything is covered</h2>
+    <p class="text-body-secondary mb-0">Every open ticket has someone working on it.</p>
+  </div>
+{% elif has_filters %}
+  <div class="empty">
+    <div class="empty-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-search"/></svg></div>
+    <h2 class="h5">No tickets match</h2>
+    <p class="text-body-secondary mb-3">Try a different word, or switch to another tab.</p>
+    <a class="btn btn-soft" href="{% url 'ticket_list' %}" data-clear-filters>Clear filters</a>
+  </div>
+{% else %}
+  <div class="empty">
+    <div class="empty-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-inbox"/></svg></div>
+    <h2 class="h5">No open tickets</h2>
+    <p class="text-body-secondary mb-3">When a client asks for something, create a ticket so the team can pick it up.</p>
+    <a class="btn btn-primary" href="{% url 'ticket_add' %}"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg> New ticket</a>
+  </div>
+{% endif %}
+</div>

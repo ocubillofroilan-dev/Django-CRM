@@ -1,15 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Delete {{ record.full_name }}{% endblock %}
-{% block page_title %}Delete customer{% endblock %}
+{% block title %}Delete {{ company.name }}{% endblock %}
+{% block page_title %}Delete company{% endblock %}
 
 {% block content %}
 <div class="narrow surface surface-pad text-center">
   <span class="stat-icon is-danger stat-icon-lg mx-auto mb-3"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-trash"/></svg></span>
-  <h1 class="h4">Delete {{ record.full_name }}?</h1>
-  <p class="text-body-secondary">This permanently removes the customer and all of their notes. It can't be undone.</p>
+  <h1 class="h4">Delete {{ company.name }}?</h1>
+  <p class="text-body-secondary">The company profile is permanently removed. Its contacts are kept and will show "No company". To keep the history, set the company to Former client instead.</p>
   <form method="post" class="d-flex justify-content-center gap-2 mt-4">
     {% csrf_token %}
-    <a class="btn btn-outline-secondary" href="{% url 'record' record.pk %}">Keep customer</a>
+    <a class="btn btn-outline-secondary" href="{% url 'company_detail' company.pk %}">Keep company</a>
     <button type="submit" class="btn btn-danger">Yes, delete</button>
   </form>
 </div>

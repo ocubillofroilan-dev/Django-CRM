@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load ui_tags %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}Reports{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Reports</h1>
+    <p>How the team is handling client requests.</p>
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'ticket_completed' %}">
+    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-square"/></svg> See completed tickets
+  </a>
+</div>
+
+<section class="row g-3 mb-4" aria-label="Summary">
+  <div class="col-6 col-xl-3">
+    <div class="surface stat">
+      <span class="stat-icon is-new"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-inbox"/></svg></span>
+      <div><div class="stat-value">{{ totals.open_now }}</div><div class="stat-label">Open now</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="surface stat">
+      <span class="stat-icon {% if totals.unassigned_now %}is-danger{% else %}is-active{% endif %}"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-user-plus"/></svg></span>
+      <div><div class="stat-value">{{ totals.unassigned_now }}</div><div class="stat-label">Nobody working</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="surface stat">
+      <span class="stat-icon is-active"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-check-square"/></svg></span>
+      <div><div class="stat-value">{{ totals.done_7 }}</div><div class="stat-label">Done in 7 days</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="surface stat">
+      <span class="stat-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-activity"/></svg></span>
+      <div>
+        <div class="stat-value">{% if totals.avg_hours is None %}&ndash;{% else %}{{ totals.avg_hours }} h{% endif %}</div>
+        <div class="stat-label">Average time to finish</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="surface surface-pad mb-4" aria-labelledby="chart-heading">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h2 class="section-title mb-0" id="chart-heading">Last 14 days</h2>
+    <div class="small text-body-secondary">
+      <span class="legend-dot legend-created"></span> Created
+      <span class="legend-dot legend-done ms-3"></span> Finished
+    </div>
+  </div>
+  <div class="chart" role="img" aria-label="Tickets created and finished each day over the last 14 days">
+    {% for d in chart %}
+    <div class="chart-col" title="{{ d.day|date:'M j' }}: {{ d.created }} created, {{ d.done }} finished">
+      <div class="chart-bars">
+        <div class="bar bar-created bar-h{{ d.created_h }}"></div>
+        <div class="bar bar-done bar-h{{ d.done_h }}"></div>
+      </div>
+      <div class="chart-label">{{ d.day|date:"j" }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <section class="surface overflow-hidden" aria-labelledby="team-heading">
+      <div class="p-3 border-bottom"><h2 class="section-title mb-0" id="team-heading">Team (last 30 days)</h2></div>
+      <div class="table-responsive">
+        <table class="table table-crm align-middle">
+          <caption class="visually-hidden">Tickets per team member</caption>
+          <thead><tr><th scope="col">Member</th><th scope="col">Working on now</th><th scope="col">Finished</th></tr></thead>
+          <tbody>
+            {% for m in team %}
+            <tr>
+              <td>
+                <span class="assignee-btn is-static">
+                  <span class="avatar avatar-sm avatar-h{{ m.get_username|avatar_hue }}" aria-hidden="true">{{ m.get_username|slice:":1"|upper }}</span>
+                  <span class="assignee-name">{% firstof m.get_full_name m.get_username %}</span>
+                </span>
+              </td>
+              <td>{{ m.open_count }}</td>
+              <td>{{ m.done_count }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  <div class="col-lg-5">
+    <section class="surface overflow-hidden" aria-labelledby="clients-heading">
+      <div class="p-3 border-bottom"><h2 class="section-title mb-0" id="clients-heading">Clients with the most requests (30 days)</h2></div>
+      {% for c in clients %}
+      <a class="list-row" href="{% url 'company_detail' c.pk %}">
+        <span class="avatar avatar-sm avatar-square avatar-h{{ c.name|avatar_hue }}" aria-hidden="true">{{ c.initials }}</span>
+        <span class="min-w-0"><span class="d-block fw-semibold text-truncate">{{ c.name }}</span><span class="d-block small text-body-secondary">{{ c.code }}</span></span>
+        <span class="ms-auto fw-semibold">{{ c.n }}</span>
+      </a>
+      {% empty %}
+      <p class="text-body-secondary text-center p-4 mb-0">No tickets in the last 30 days.</p>
+      {% endfor %}
+    </section>
+  </div>
+</div>
+{% endblock %}

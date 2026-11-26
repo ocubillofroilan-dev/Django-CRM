@@ -1,0 +1,40 @@
+{% load ui_tags %}
+<div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <form method="post" action="">
+        {% csrf_token %}
+        <div class="modal-header border-0 pb-0">
+          <div>
+            <h2 class="h5 mb-1" id="assignModalTitle">Who is working on <span data-assign-number>this ticket</span>?</h2>
+            <p class="small text-body-secondary mb-0" data-assign-current>Nobody yet.</p>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label for="assignFilter" class="visually-hidden">Find a name</label>
+          <input type="search" id="assignFilter" class="form-control mb-3" placeholder="Find your name" autocomplete="off" data-assign-filter>
+          <div class="assign-list" role="group" aria-label="Team members">
+            {% for m in staff %}
+            <button type="submit" name="assignee" value="{{ m.pk }}" class="assign-option" data-assign-option data-name="{% firstof m.get_full_name m.get_username %} {{ m.get_username }}" {% if not is_admin and m.pk != user.pk %}disabled{% endif %}>
+              <span class="avatar avatar-sm avatar-h{{ m.get_username|avatar_hue }}" aria-hidden="true">{{ m.get_username|slice:":1"|upper }}</span>
+              <span class="min-w-0 text-start">
+                <span class="d-block fw-semibold text-truncate">{% firstof m.get_full_name m.get_username %}{% if m.pk == user.pk %} (you){% endif %}</span>
+                <span class="d-block small text-body-secondary">{% if m.is_superuser %}Admin{% else %}Staff{% endif %}</span>
+              </span>
+              {% if not is_admin and m.pk != user.pk %}<span class="ms-auto small text-body-secondary">Admin only</span>{% endif %}
+            </button>
+            {% endfor %}
+            <button type="submit" name="assignee" value="" class="assign-option assign-release d-none" data-assign-release>
+              <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-log-out"/></svg>
+              <span class="fw-semibold">Nobody: put it back in the queue</span>
+            </button>
+          </div>
+          {% if not is_admin %}
+          <p class="small text-body-secondary mt-3 mb-0">You can take a ticket that nobody is working on. An admin can assign tickets to anyone.</p>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

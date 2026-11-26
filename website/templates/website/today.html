@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load ui_tags %}
+{% block title %}Today{% endblock %}
+{% block page_title %}Today{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Good {{ greeting }}, {{ user.first_name|default:user.get_username }}</h1>
+    <p>Here is where your clients stand.</p>
+  </div>
+</div>
+
+<section class="row g-3 mb-4" aria-label="Summary">
+  <div class="col-6 col-xl-3">
+    <div class="surface stat">
+      <span class="stat-icon {% if stats.unassigned_tickets %}is-danger{% else %}is-active{% endif %}"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-user-plus"/></svg></span>
+      <div><div class="stat-value">{{ stats.unassigned_tickets }}</div><div class="stat-label">Tickets nobody is working on</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="surface stat">
+      <span class="stat-icon is-new"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-inbox"/></svg></span>
+      <div><div class="stat-value">{{ stats.open_tickets }}</div><div class="stat-label">Open tickets</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="surface stat">
+      <span class="stat-icon is-active"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-shield-check"/></svg></span>
+      <div><div class="stat-value">{{ stats.clients }}</div><div class="stat-label">Client companies</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="surface stat">
+      <span class="stat-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#i-users"/></svg></span>
+      <div><div class="stat-value">{{ stats.contacts }}</div><div class="stat-label">Contacts</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <section class="surface overflow-hidden" aria-labelledby="waiting-heading">
+      <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
+        <h2 class="section-title mb-0" id="waiting-heading">Waiting for someone</h2>
+        <a href="{% url 'ticket_list' %}?view=unassigned" class="small">See all</a>
+      </div>
+      {% for t in unassigned_list %}
+      <a class="list-row" href="{% url 'ticket_detail' t.pk %}">
+        <span class="assignee-btn is-empty is-static"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user-plus"/></svg> Unassigned</span>
+        <span class="min-w-0">
+          <span class="d-block fw-semibold text-truncate">{{ t.subject }}</span>
+          <span class="d-block small text-body-secondary text-truncate">{{ t.number }}{% if t.company %} · {{ t.company.name }}{% endif %} · {{ t.created_at|timesince }} ago</span>
+        </span>
+      </a>
+      {% empty %}
+      <p class="text-body-secondary text-center p-4 mb-0">Everything is covered. Every open ticket has someone on it.</p>
+      {% endfor %}
+    </section>
+  </div>
+  <div class="col-lg-6">
+    <section class="surface overflow-hidden" aria-labelledby="mine-heading">
+      <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
+        <h2 class="section-title mb-0" id="mine-heading">My tickets</h2>
+        <a href="{% url 'ticket_list' %}?view=mine" class="small">See all</a>
+      </div>
+      {% for t in my_tickets %}
+      <a class="list-row" href="{% url 'ticket_detail' t.pk %}">
+        <span class="min-w-0">
+          <span class="d-block fw-semibold text-truncate">{{ t.subject }}</span>
+          <span class="d-block small text-body-secondary text-truncate">{{ t.number }}{% if t.company %} · {{ t.company.name }}{% endif %}</span>
+        </span>
+        <span class="ms-auto priority priority-{{ t.priority }}">{{ t.get_priority_display }}</span>
+      </a>
+      {% empty %}
+      <p class="text-body-secondary text-center p-4 mb-0">You are not working on any tickets. Take one from the list on the left.</p>
+      {% endfor %}
+    </section>
+  </div>
+</div>
+
+<section class="surface surface-pad mb-4" id="verify" aria-labelledby="verify-title">
+  <h2 class="section-title" id="verify-title">Verify a sender</h2>
+  <p class="text-body-secondary">Someone emailed us? Paste their address to see whether they belong to one of your clients, and what to check before helping them.</p>
+  <form method="get" action="{% url 'home' %}#verify" class="verify-form">
+    <label for="verify-email" class="visually-hidden">Sender's email address</label>
+    <input type="email" id="verify-email" name="verify" value="{{ verify_email|default:'' }}" class="form-control" placeholder="name@company.com" autocomplete="off" required>
+    <button type="submit" class="btn btn-primary">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-shield-check"/></svg> Verify
+    </button>
+  </form>
+  {% if verification %}
+  <div class="mt-3">{% include "website/_verification.html" with v=verification %}</div>
+  {% endif %}
+</section>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <section class="surface overflow-hidden" aria-labelledby="recent-contacts">
+      <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
+        <h2 class="section-title mb-0" id="recent-contacts">Recent contacts</h2>
+        <a href="{% url 'contact_list' %}" class="small">View all</a>
+      </div>
+      {% for c in recent_contacts %}
+      <a class="list-row" href="{% url 'contact_detail' c.pk %}">
+        <span class="avatar avatar-sm avatar-h{{ c.full_name|avatar_hue }}" aria-hidden="true">{{ c.initials }}</span>
+        <span class="min-w-0">
+          <span class="d-block fw-semibold text-truncate">{{ c.full_name }}</span>
+          <span class="d-block small text-body-secondary text-truncate">{% if c.company %}{{ c.company.name }}{% else %}No company{% endif %}</span>
+        </span>
+        <span class="ms-auto small text-body-secondary">{{ c.created_at|timesince }} ago</span>
+      </a>
+      {% empty %}
+      <p class="text-body-secondary text-center p-4 mb-0">No contacts yet.</p>
+      {% endfor %}
+    </section>
+  </div>
+  <div class="col-lg-6">
+    <section class="surface overflow-hidden" aria-labelledby="recent-companies">
+      <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
+        <h2 class="section-title mb-0" id="recent-companies">Recent companies</h2>
+        <a href="{% url 'company_list' %}" class="small">View all</a>
+      </div>
+      {% for c in recent_companies %}
+      <a class="list-row" href="{% url 'company_detail' c.pk %}">
+        <span class="avatar avatar-sm avatar-square avatar-h{{ c.name|avatar_hue }}" aria-hidden="true">{{ c.initials }}</span>
+        <span class="min-w-0">
+          <span class="d-block fw-semibold text-truncate">{{ c.name }}</span>
+          <span class="d-block small text-body-secondary text-truncate">{{ c.code }}{% if c.industry %} · {{ c.industry }}{% endif %}</span>
+        </span>
+        <span class="ms-auto status status-{{ c.status }}">{{ c.get_status_display }}</span>
+      </a>
+      {% empty %}
+      <p class="text-body-secondary text-center p-4 mb-0">No companies yet.</p>
+      {% endfor %}
+    </section>
+  </div>
+</div>
+{% endblock %}

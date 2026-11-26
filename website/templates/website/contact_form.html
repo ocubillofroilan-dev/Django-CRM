@@ -3,14 +3,14 @@
 {% block page_title %}{{ page_title }}{% endblock %}
 
 {% block content %}
-<a class="btn btn-link px-0 mb-2 text-decoration-none" href="{% if object %}{% url 'record' object.pk %}{% else %}{% url 'home' %}{% endif %}">
-  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg> {% if object %}Back to customer{% else %}All customers{% endif %}
+<a class="btn btn-link px-0 mb-2 text-decoration-none" href="{% if object %}{% url 'contact_detail' object.pk %}{% else %}{% url 'contact_list' %}{% endif %}">
+  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg> {% if object %}Back to contact{% else %}All contacts{% endif %}
 </a>
 
 <div class="page-head">
   <div>
     <h1>{{ page_title }}</h1>
-    <p>Fields marked optional can be left blank.</p>
+    <p>Each email address can belong to one contact only. That is how we recognise senders.</p>
   </div>
 </div>
 
@@ -18,7 +18,7 @@
   {% csrf_token %}
   {% include "website/_form_errors.html" %}
 
-  <h2 class="section-title">Contact</h2>
+  <h2 class="section-title">Person</h2>
   <div class="row">
     <div class="col-md-6">{% include "website/_field.html" with field=form.first_name %}</div>
     <div class="col-md-6">{% include "website/_field.html" with field=form.last_name %}</div>
@@ -26,12 +26,17 @@
     <div class="col-md-6">{% include "website/_field.html" with field=form.phone %}</div>
   </div>
 
+  <h2 class="section-title mt-3">Company and role</h2>
+  <div class="row">
+    <div class="col-md-6">{% include "website/_field.html" with field=form.company %}</div>
+    <div class="col-md-6">{% include "website/_field.html" with field=form.job_title %}</div>
+    <div class="col-12">{% include "website/_field.html" with field=form.can_request %}</div>
+  </div>
+
   <h2 class="section-title mt-3">Relationship</h2>
   <div class="row">
     <div class="col-md-6">{% include "website/_field.html" with field=form.status %}</div>
-    {% if form.owner %}
     <div class="col-md-6">{% include "website/_field.html" with field=form.owner %}</div>
-    {% endif %}
   </div>
 
   <h2 class="section-title mt-3">Address</h2>
@@ -46,7 +51,7 @@
   {% include "website/_field.html" with field=form.notes %}
 
   <div class="d-flex flex-wrap gap-2 justify-content-end border-top pt-3 mt-2">
-    <a class="btn btn-outline-secondary" href="{% if object %}{% url 'record' object.pk %}{% else %}{% url 'home' %}{% endif %}">Cancel</a>
+    <a class="btn btn-outline-secondary" href="{% if object %}{% url 'contact_detail' object.pk %}{% else %}{% url 'contact_list' %}{% endif %}">Cancel</a>
     <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
   </div>
 </form>

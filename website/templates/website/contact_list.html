@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Contacts{% endblock %}
+{% block page_title %}Contacts{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Contacts</h1>
+    <p>The people you work with, and the company each one belongs to.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'contact_export' %}{% if querystring %}?{{ querystring }}{% endif %}" data-export-link>
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-download"/></svg> Export CSV
+    </a>
+    <a class="btn btn-primary" href="{% url 'contact_add' %}">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg> New contact
+    </a>
+  </div>
+</div>
+
+{% if company_filter %}
+<p class="mb-3">Showing contacts at <a href="{% url 'company_detail' company_filter.pk %}">{{ company_filter.name }}</a>.
+  <a href="{% url 'contact_list' %}" class="ms-2">Show everyone</a></p>
+{% endif %}
+
+<form class="surface toolbar mb-3" method="get" action="{% url 'contact_list' %}" role="search" data-live-search>
+  {% if company_filter %}<input type="hidden" name="company" value="{{ company_filter.pk }}">{% endif %}
+  <div class="search-box">
+    <label for="q" class="visually-hidden">Search contacts</label>
+    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
+    <input type="search" id="q" name="q" value="{{ q }}" class="form-control" placeholder="Search name, email, phone or company" autocomplete="off" data-search-input />
+    <kbd aria-hidden="true">/</kbd>
+  </div>
+  <div>
+    <label for="status" class="visually-hidden">Status</label>
+    <select id="status" name="status" class="form-select">
+      <option value="">All statuses</option>
+      {% for value, label in status_choices %}<option value="{{ value }}" {% if value == status %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="sort" class="visually-hidden">Sort by</label>
+    <select id="sort" name="sort" class="form-select">
+      {% for value, label in sort_options %}<option value="{{ value }}" {% if value == sort %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <button class="visually-hidden" type="submit" data-no-loading>Search</button>
+  <noscript><button class="btn btn-soft" type="submit">Apply</button></noscript>
+</form>
+
+<div class="visually-hidden" role="status" id="resultsStatus"></div>
+<section class="surface overflow-hidden" aria-label="Contact list">
+  <div id="results">{% include "website/_contact_results.html" %}</div>
+</section>
+
+{% include "website/_delete_modal.html" %}
+{% endblock %}

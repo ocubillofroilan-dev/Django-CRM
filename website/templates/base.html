@@ -7,30 +7,45 @@
 <aside class="sidebar" id="sidebar" aria-label="Main navigation">
   <a class="brand" href="{% url 'home' %}">
     <span class="brand-mark"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg></span>
-    <span>CRM</span>
+    <span>{{ APP_NAME }}</span>
   </a>
 
   <nav>
     <div class="side-label">Workspace</div>
-    <a class="side-link {% if url_name == 'home' or url_name == 'record' or url_name == 'update_record' or url_name == 'delete_record' %}is-active{% endif %}" href="{% url 'home' %}" {% if url_name == 'home' or url_name == 'record' or url_name == 'update_record' or url_name == 'delete_record' %}aria-current="page"{% endif %}>
-      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-grid"/></svg> Customers
+    <a class="side-link {% if url_name == 'home' %}is-active{% endif %}" href="{% url 'home' %}" {% if url_name == 'home' %}aria-current="page"{% endif %}>
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-home"/></svg> Today
     </a>
-    <a class="side-link {% if url_name == 'add_record' %}is-active{% endif %}" href="{% url 'add_record' %}" {% if url_name == 'add_record' %}aria-current="page"{% endif %}>
-      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user-plus"/></svg> New customer
+    <a class="side-link {% if url_name|slice:':8' == 'contact_' %}is-active{% endif %}" href="{% url 'contact_list' %}" {% if url_name|slice:':8' == 'contact_' %}aria-current="page"{% endif %}>
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-users"/></svg> Contacts
     </a>
-    <a class="side-link" href="{% url 'export_records' %}">
-      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-download"/></svg> Export CSV
+    <a class="side-link {% if url_name|slice:':8' == 'company_' %}is-active{% endif %}" href="{% url 'company_list' %}" {% if url_name|slice:':8' == 'company_' %}aria-current="page"{% endif %}>
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-briefcase"/></svg> Companies
+    </a>
+
+    <div class="side-label">Work</div>
+    <a class="side-link {% if url_name|slice:':7' == 'ticket_' and url_name != 'ticket_completed' %}is-active{% endif %}" href="{% url 'ticket_list' %}" {% if url_name|slice:':7' == 'ticket_' and url_name != 'ticket_completed' %}aria-current="page"{% endif %}>
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-inbox"/></svg> Tickets
+      {% if unassigned_tickets %}<span class="pill-count" title="Tickets nobody is working on">{{ unassigned_tickets }}</span>{% endif %}
+    </a>
+    <a class="side-link {% if url_name == 'ticket_completed' %}is-active{% endif %}" href="{% url 'ticket_completed' %}" {% if url_name == 'ticket_completed' %}aria-current="page"{% endif %}>
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-square"/></svg> Completed
+    </a>
+    <a class="side-link {% if url_name == 'reports' %}is-active{% endif %}" href="{% url 'reports' %}" {% if url_name == 'reports' %}aria-current="page"{% endif %}>
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bar-chart"/></svg> Reports
     </a>
 
     <div class="side-label">Account</div>
+    {% if is_admin %}
+    <a class="side-link {% if url_name|slice:':5' == 'team_' %}is-active{% endif %}" href="{% url 'team_list' %}">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user-plus"/></svg> Team
+    </a>
+    <a class="side-link" href="{% url 'admin:index' %}">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg> Admin site
+    </a>
+    {% endif %}
     <a class="side-link {% if url_name == 'password_change' or url_name == 'password_change_done' %}is-active{% endif %}" href="{% url 'password_change' %}">
       <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg> Change password
     </a>
-    {% if user.is_staff %}
-    <a class="side-link" href="{% url 'admin:index' %}">
-      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg> Admin
-    </a>
-    {% endif %}
     <a class="side-link" href="{% url 'api-root' %}">
       <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-code"/></svg> API
     </a>
@@ -41,7 +56,7 @@
       <span class="avatar avatar-sm avatar-h{{ user.get_username|avatar_hue }}" aria-hidden="true">{{ user.get_username|slice:":1"|upper }}</span>
       <div class="min-w-0">
         <div class="fw-semibold text-truncate">{{ user.get_full_name|default:user.get_username }}</div>
-        <div class="small text-body-secondary">{% if can_manage_all %}Manager{% else %}Agent{% endif %}</div>
+        <div class="small text-body-secondary">{% if is_admin %}Admin{% else %}Staff{% endif %}</div>
       </div>
     </div>
     <form method="post" action="{% url 'logout' %}">
@@ -58,13 +73,16 @@
     <button type="button" class="btn btn-soft btn-icon d-lg-none" data-sidebar-toggle aria-controls="sidebar" aria-expanded="false" aria-label="Open menu">
       <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-menu"/></svg>
     </button>
-    <p class="topbar-title">{% block page_title %}Customers{% endblock %}</p>
+    <p class="topbar-title">{% block page_title %}Today{% endblock %}</p>
     <div class="ms-auto d-flex align-items-center gap-2">
       <button type="button" class="btn btn-soft btn-icon" data-theme-toggle aria-pressed="false" aria-label="Switch theme">
         <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-moon"/></svg>
       </button>
-      <a class="btn btn-primary d-none d-sm-inline-flex align-items-center gap-2" href="{% url 'add_record' %}">
-        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg> New customer
+      <a class="btn btn-soft d-none d-sm-inline-flex align-items-center gap-2" href="{% url 'contact_add' %}">
+        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user-plus"/></svg> New contact
+      </a>
+      <a class="btn btn-primary d-none d-sm-inline-flex align-items-center gap-2" href="{% url 'ticket_add' %}">
+        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg> New ticket
       </a>
     </div>
   </header>

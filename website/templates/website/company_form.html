@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<a class="btn btn-link px-0 mb-2 text-decoration-none" href="{% if object %}{% url 'company_detail' object.pk %}{% else %}{% url 'company_list' %}{% endif %}">
+  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-left"/></svg> {% if object %}Back to company{% else %}All companies{% endif %}
+</a>
+
+<div class="page-head">
+  <div>
+    <h1>{{ page_title }}</h1>
+    <p>The verification fields help staff confirm that an email really comes from this client.</p>
+  </div>
+</div>
+
+<form method="post" class="surface surface-pad form-card">
+  {% csrf_token %}
+  {% include "website/_form_errors.html" %}
+
+  <h2 class="section-title">Company</h2>
+  <div class="row">
+    <div class="col-md-8">{% include "website/_field.html" with field=form.name %}</div>
+    <div class="col-md-4">{% include "website/_field.html" with field=form.status %}</div>
+    <div class="col-md-4">{% include "website/_field.html" with field=form.industry %}</div>
+    <div class="col-md-4">{% include "website/_field.html" with field=form.website %}</div>
+    <div class="col-md-4">{% include "website/_field.html" with field=form.phone %}</div>
+  </div>
+
+  <h2 class="section-title mt-3">Verification</h2>
+  {% include "website/_field.html" with field=form.email_domains %}
+  {% include "website/_field.html" with field=form.verification_notes %}
+
+  <h2 class="section-title mt-3">Services and needs</h2>
+  {% include "website/_field.html" with field=form.services %}
+  {% include "website/_field.html" with field=form.needs %}
+
+  <h2 class="section-title mt-3">Address</h2>
+  <div class="row">
+    <div class="col-12">{% include "website/_field.html" with field=form.address %}</div>
+    <div class="col-md-5">{% include "website/_field.html" with field=form.city %}</div>
+    <div class="col-md-4">{% include "website/_field.html" with field=form.province %}</div>
+    <div class="col-md-3">{% include "website/_field.html" with field=form.zipcode %}</div>
+  </div>
+
+  <h2 class="section-title mt-3">Account</h2>
+  {% include "website/_field.html" with field=form.account_manager %}
+
+  <div class="d-flex flex-wrap gap-2 justify-content-end border-top pt-3 mt-2">
+    <a class="btn btn-outline-secondary" href="{% if object %}{% url 'company_detail' object.pk %}{% else %}{% url 'company_list' %}{% endif %}">Cancel</a>
+    <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
+  </div>
+</form>
+{% endblock %}
